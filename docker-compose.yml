@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: healthcare_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgressql15
+      POSTGRES_DB: healthcare
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - appnet
+
+  backend:
+    build: ./backend
+    container_name: healthcare_backend
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgressql15@db:5432/healthcare
+    ports:
+      - "8000:8000"
+    networks:
+      - appnet
+
+  frontend:
+    build: ./frontend
+    container_name: healthcare_frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - appnet
+
+volumes:
+  db_data:
+
+networks:
+  appnet:

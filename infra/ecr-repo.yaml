@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Create ECR repositories for healthcare-app backend & frontend"
+
+Resources:
+  BackendRepo:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: healthcare-backend
+      ImageScanningConfiguration:
+        ScanOnPush: true
+
+  FrontendRepo:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: healthcare-frontend
+      ImageScanningConfiguration:
+        ScanOnPush: true
+
+Outputs:
+  BackendRepoUri:
+    Value: !GetAtt BackendRepo.RepositoryUri
+  FrontendRepoUri:
+    Value: !GetAtt FrontendRepo.RepositoryUri
