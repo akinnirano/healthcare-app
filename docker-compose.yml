@@ -24,7 +24,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:postgressql15@db:5432/healthcare
     ports:
-      - "8000:8000"
+      - "8009:8009"
     networks:
       - appnet
 
