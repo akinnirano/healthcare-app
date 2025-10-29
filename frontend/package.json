@@ -14,7 +14,6 @@
     "react-router-dom": "^6.28.0",
     "bcryptjs": "^2.4.3",
     "jwt-decode": "^4.0.0",
-    "react-leaflet": "^4.3.4",
     "leaflet": "^1.9.4"
   },
   "devDependencies": {

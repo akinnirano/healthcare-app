@@ -6,16 +6,10 @@ WORKDIR /app
 # Install dependencies first (better layer caching)
 COPY package.json ./
 # Copy lockfiles if present (COPY fails on missing files, so copy conditionally)
-COPY package-lock.json ./
-COPY yarn.lock ./
+# Do not copy lockfiles; we want npm to resolve fresh versions inside the container
 
 # Install deps robustly: prefer npm ci when lockfile exists; fall back to npm install
-RUN set -eux; \
-  if [ -f package-lock.json ]; then \
-    npm ci --no-audit --no-fund; \
-  else \
-    npm install --no-audit --no-fund; \
-  fi
+RUN set -eux; npm install --no-audit --no-fund
 
 # Build-time API base (optional). Example override:
 # docker build --build-arg VITE_API_BASE=http://backend:8000 -t frontend .
