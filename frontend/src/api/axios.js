@@ -1,21 +1,31 @@
 
 import axios from 'axios'
 
-// Point to same-origin /api by default; override with VITE_API_BASE if provided
-let API_BASE = import.meta.env.VITE_API_BASE || '/api'
-// Prevent mixed content if someone misconfigures VITE_API_BASE with http on an https page
+// We will build request URLs in the interceptor; avoid baseURL path-join quirks
+let API_BASE = import.meta.env.VITE_API_BASE || ''
 if (typeof window !== 'undefined' && window.location && window.location.protocol === 'https:' && typeof API_BASE === 'string' && API_BASE.startsWith('http://')) {
   API_BASE = API_BASE.replace('http://', 'https://')
 }
 
-const api = axios.create({
-  baseURL: API_BASE,
-  headers: { 'Content-Type': 'application/json' },
-})
+const api = axios.create({ baseURL: API_BASE || '', headers: { 'Content-Type': 'application/json' } })
 
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('access_token')
   if (token) config.headers.Authorization = `Bearer ${token}`
+  // Force same-origin /api prefix for relative URLs
+  try {
+    if (typeof config.url === 'string') {
+      let url = config.url
+      const isAbsolute = /^https?:\/\//i.test(url)
+      if (!isAbsolute) {
+        if (!url.startsWith('/')) url = `/${url}`
+        if (!url.startsWith('/api/')) url = `/api${url}`
+      } else if (window?.location?.protocol === 'https:' && url.startsWith('http://')) {
+        url = url.replace('http://', 'https://')
+      }
+      config.url = url
+    }
+  } catch (_) { /* no-op */ }
   // Normalize URLs for collection endpoints to include trailing slash to avoid 308 redirects
   try {
     const collections = new Set([
