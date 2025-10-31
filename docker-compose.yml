@@ -31,15 +31,12 @@ services:
   frontend:
     build:
       context: ./frontend
-      args:
-        VITE_API_BASE: /api
     container_name: healthcare_frontend
     depends_on:
       - backend
     ports:
       - "127.0.0.1:8080:80"
     environment:
-      - VITE_API_BASE=/api
 
     networks:
       - appnet

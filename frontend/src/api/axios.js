@@ -1,13 +1,8 @@
 
 import axios from 'axios'
 
-// We will build request URLs in the interceptor; avoid baseURL path-join quirks
-let API_BASE = import.meta.env.VITE_API_BASE || ''
-if (typeof window !== 'undefined' && window.location && window.location.protocol === 'https:' && typeof API_BASE === 'string' && API_BASE.startsWith('http://')) {
-  API_BASE = API_BASE.replace('http://', 'https://')
-}
-
-const api = axios.create({ baseURL: API_BASE || '', headers: { 'Content-Type': 'application/json' } })
+// Build request URLs in the interceptor; keep baseURL empty to avoid double-prefix issues
+const api = axios.create({ baseURL: '', headers: { 'Content-Type': 'application/json' } })
 
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('access_token')
