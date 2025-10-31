@@ -1,12 +1,28 @@
 from sqlalchemy.orm import Session
+from contextvars import ContextVar
 from datetime import datetime, timedelta
 from app.db import models
+
+# Per-request context for auditing creator
+_created_by_ctx: ContextVar[str] = ContextVar("created_by", default="system")
+
+def set_created_by(value: str | None) -> None:
+    try:
+        _created_by_ctx.set((value or "system").strip() or "system")
+    except Exception:
+        _created_by_ctx.set("system")
+
+def get_created_by() -> str:
+    try:
+        return _created_by_ctx.get()
+    except LookupError:
+        return "system"
 
 # =========================================================
 # ROLE CRUD
 # =========================================================
 def create_role(db: Session, name: str, description: str = None):
-    role = models.Role(name=name, description=description)
+    role = models.Role(name=name, description=description, createdby=get_created_by())
     db.add(role)
     db.commit()
     db.refresh(role)
@@ -42,7 +58,7 @@ def delete_role(db: Session, role_id: int):
 # PRIVILEGE CRUD
 # =========================================================
 def create_privilege(db: Session, code: str, description: str = None):
-    privilege = models.Privilege(code=code, description=description)
+    privilege = models.Privilege(code=code, description=description, createdby=get_created_by())
     db.add(privilege)
     db.commit()
     db.refresh(privilege)
@@ -78,7 +94,10 @@ def delete_privilege(db: Session, privilege_id: int):
 # USER CRUD
 # =========================================================
 def create_user(db: Session, full_name: str, email: str, password_hash: str, role_id: int, phone: str = None):
-    user = models.User(full_name=full_name, email=email, password_hash=password_hash, role_id=role_id, phone=phone)
+    created_by = get_created_by()
+    if (not created_by or created_by == "system") and email:
+        created_by = email
+    user = models.User(full_name=full_name, email=email, password_hash=password_hash, role_id=role_id, phone=phone, createdby=created_by)
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -113,7 +132,7 @@ def delete_user(db: Session, user_id: int):
 # STAFF CRUD
 # =========================================================
 def create_staff(db: Session, user_id: int, license_number: str = None, skills: list = None, latitude: float = None, longitude: float = None):
-    staff = models.Staff(user_id=user_id, license_number=license_number, skills=skills or [], latitude=latitude, longitude=longitude)
+    staff = models.Staff(user_id=user_id, license_number=license_number, skills=skills or [], latitude=latitude, longitude=longitude, createdby=get_created_by())
     db.add(staff)
     db.commit()
     db.refresh(staff)
@@ -148,7 +167,10 @@ def delete_staff(db: Session, staff_id: int):
 # PATIENT CRUD
 # =========================================================
 def create_patient(db: Session, full_name: str, address: str = None, latitude: float = None, longitude: float = None, phone: str = None, email: str = None):
-    patient = models.Patient(full_name=full_name, address=address, latitude=latitude, longitude=longitude, phone=phone, email=email)
+    created_by = get_created_by()
+    if (not created_by or created_by == "system") and email:
+        created_by = email
+    patient = models.Patient(full_name=full_name, address=address, latitude=latitude, longitude=longitude, phone=phone, email=email, createdby=created_by)
     db.add(patient)
     db.commit()
     db.refresh(patient)
@@ -183,7 +205,7 @@ def delete_patient(db: Session, patient_id: int):
 # SERVICE REQUEST CRUD
 # =========================================================
 def create_service_request(db: Session, patient_id: int, description: str, required_skill: str):
-    request = models.ServiceRequest(patient_id=patient_id, description=description, required_skill=required_skill)
+    request = models.ServiceRequest(patient_id=patient_id, description=description, required_skill=required_skill, createdby=get_created_by())
     db.add(request)
     db.commit()
     db.refresh(request)
@@ -218,7 +240,7 @@ def delete_service_request(db: Session, request_id: int):
 # ASSIGNMENT CRUD
 # =========================================================
 def create_assignment(db: Session, service_request_id: int, staff_id: int, confirmed: bool = False):
-    assignment = models.Assignment(service_request_id=service_request_id, staff_id=staff_id, confirmed=confirmed)
+    assignment = models.Assignment(service_request_id=service_request_id, staff_id=staff_id, confirmed=confirmed, createdby=get_created_by())
     db.add(assignment)
     db.commit()
     db.refresh(assignment)
@@ -263,6 +285,7 @@ def create_visit(db: Session, patient_id: int, staff_id: int, scheduled_time: st
         staff_id=staff_id,
         scheduled_time=scheduled_dt,
         notes=notes,
+        createdby=get_created_by(),
     )
     db.add(visit)
     db.commit()
@@ -294,7 +317,7 @@ def list_today_visits(db: Session):
 
 # ---- Feedback ----
 def create_feedback(db: Session, visit_id: int, rating: int, comments: str | None = None):
-    fb = models.Feedback(visit_id=visit_id, rating=rating, comments=comments)
+    fb = models.Feedback(visit_id=visit_id, rating=rating, comments=comments, createdby=get_created_by())
     db.add(fb)
     db.commit()
     db.refresh(fb)
@@ -312,6 +335,7 @@ def create_compliance(db: Session, staff_id: int, document_type: str, document_n
         document_number=document_number,
         expiry_date=expiry_dt,
         valid=True,
+        createdby=get_created_by(),
     )
     db.add(rec)
     db.commit()
@@ -350,6 +374,7 @@ def start_shift(db: Session, staff_id: int, start_lat: float | None = None, star
         start_lat=start_lat,
         start_lng=start_lng,
         status=models.ShiftStatus.STARTED,
+        createdby=get_created_by(),
     )
     db.add(shift)
     db.commit()

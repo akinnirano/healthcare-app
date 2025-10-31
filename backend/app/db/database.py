@@ -58,6 +58,14 @@ def init_db():
     try:
         with engine.begin() as conn:
             conn.execute(text("ALTER TABLE shifts ADD COLUMN IF NOT EXISTS purpose VARCHAR(255)"))
+            # Add auditing columns to all core tables
+            tables = [
+                "privileges","roles","users","staff","patients","service_requests","assignments",
+                "shifts","timesheets","payroll","invoices","compliance","visits","feedback","email_tokens"
+            ]
+            for t in tables:
+                conn.execute(text(f"ALTER TABLE {t} ADD COLUMN IF NOT EXISTS createdby VARCHAR(255) DEFAULT 'system'"))
+                conn.execute(text(f"ALTER TABLE {t} ADD COLUMN IF NOT EXISTS datecreated TIMESTAMP DEFAULT NOW()"))
     except Exception as _:
         # Safe to ignore; printed by echo logs if any
         pass

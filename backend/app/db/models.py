@@ -47,6 +47,8 @@ class Privilege(Base):
     code = Column(String(100), unique=True, nullable=False)
     description = Column(String(255))
     roles = relationship("Role", secondary=role_privilege_table, back_populates="privileges")
+    createdby = Column(String(255), default="system")
+    datecreated = Column(DateTime, server_default=func.now())
 
 class Role(Base):
     __tablename__ = "roles"
@@ -56,6 +58,8 @@ class Role(Base):
     description = Column(String(255))
     privileges = relationship("Privilege", secondary=role_privilege_table, back_populates="roles")
     users = relationship("User", back_populates="role")
+    createdby = Column(String(255), default="system")
+    datecreated = Column(DateTime, server_default=func.now())
 
 class User(Base):
     __tablename__ = "users"
@@ -70,6 +74,8 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
+    createdby = Column(String(255), default="system")
+    datecreated = Column(DateTime, server_default=func.now())
 
     staff_profile = relationship("Staff", back_populates="user", uselist=False)
 
@@ -93,6 +99,8 @@ class Staff(Base):
     shifts = relationship("Shift", back_populates="staff")
     timesheets = relationship("Timesheet", back_populates="staff")
     compliance_records = relationship("Compliance", back_populates="staff")
+    createdby = Column(String(255), default="system")
+    datecreated = Column(DateTime, server_default=func.now())
 
 class Patient(Base):
     __tablename__ = "patients"
@@ -106,6 +114,8 @@ class Patient(Base):
     email = Column(String(255))
     created_at = Column(DateTime, server_default=func.now())
     requests = relationship("ServiceRequest", back_populates="patient")
+    createdby = Column(String(255), default="system")
+    datecreated = Column(DateTime, server_default=func.now())
 
 # =========================================================
 # SERVICE REQUESTS & ASSIGNMENTS
@@ -122,6 +132,8 @@ class ServiceRequest(Base):
 
     patient = relationship("Patient", back_populates="requests")
     assignment = relationship("Assignment", back_populates="service_request", uselist=False)
+    createdby = Column(String(255), default="system")
+    datecreated = Column(DateTime, server_default=func.now())
 
 
 class Assignment(Base):
@@ -135,6 +147,8 @@ class Assignment(Base):
 
     service_request = relationship("ServiceRequest", back_populates="assignment")
     staff = relationship("Staff", back_populates="assignments")
+    createdby = Column(String(255), default="system")
+    datecreated = Column(DateTime, server_default=func.now())
 
 # =========================================================
 # SHIFT, TIMESHEET, PAYROLL
@@ -154,6 +168,8 @@ class Shift(Base):
     status = Column(Enum(ShiftStatus), default=ShiftStatus.STARTED)
     staff = relationship("Staff", back_populates="shifts")
     timesheet = relationship("Timesheet", back_populates="shift", uselist=False)
+    createdby = Column(String(255), default="system")
+    datecreated = Column(DateTime, server_default=func.now())
 
 class Timesheet(Base):
     __tablename__ = "timesheets"
@@ -169,6 +185,8 @@ class Timesheet(Base):
     staff = relationship("Staff", back_populates="timesheets")
     shift = relationship("Shift", back_populates="timesheet")
     payroll = relationship("Payroll", back_populates="timesheet", uselist=False)
+    createdby = Column(String(255), default="system")
+    datecreated = Column(DateTime, server_default=func.now())
 
 class Payroll(Base):
     __tablename__ = "payroll"
@@ -182,6 +200,8 @@ class Payroll(Base):
 
     timesheet = relationship("Timesheet", back_populates="payroll")
     invoice = relationship("Invoice", back_populates="payroll", uselist=False)
+    createdby = Column(String(255), default="system")
+    datecreated = Column(DateTime, server_default=func.now())
 
 class Invoice(Base):
     __tablename__ = "invoices"
@@ -195,6 +215,8 @@ class Invoice(Base):
     created_at = Column(DateTime, server_default=func.now())
 
     payroll = relationship("Payroll", back_populates="invoice")
+    createdby = Column(String(255), default="system")
+    datecreated = Column(DateTime, server_default=func.now())
 
 # =========================================================
 # COMPLIANCE & REGULATORY CHECK
@@ -211,6 +233,8 @@ class Compliance(Base):
     last_checked = Column(DateTime, onupdate=func.now())
 
     staff = relationship("Staff", back_populates="compliance_records")
+    createdby = Column(String(255), default="system")
+    datecreated = Column(DateTime, server_default=func.now())
 
 # =========================================================
 # PATIENT VISITS & FEEDBACK
@@ -227,6 +251,8 @@ class Visit(Base):
     created_at = Column(DateTime, server_default=func.now())
 
     feedback = relationship("Feedback", back_populates="visit", uselist=False)
+    createdby = Column(String(255), default="system")
+    datecreated = Column(DateTime, server_default=func.now())
 
 class Feedback(Base):
     __tablename__ = "feedback"
@@ -238,6 +264,8 @@ class Feedback(Base):
     submitted_at = Column(DateTime, server_default=func.now())
 
     visit = relationship("Visit", back_populates="feedback")
+    createdby = Column(String(255), default="system")
+    datecreated = Column(DateTime, server_default=func.now())
 
 # =========================================================
 # EMAIL TOKENS (verification / notifications)
@@ -253,3 +281,5 @@ class EmailToken(Base):
     used = Column(Boolean, default=False)
     expires_at = Column(DateTime)
     created_at = Column(DateTime, server_default=func.now())
+    createdby = Column(String(255), default="system")
+    datecreated = Column(DateTime, server_default=func.now())

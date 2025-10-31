@@ -4,6 +4,9 @@ import Home from './pages/Home'
 import PatientRegister from './pages/PatientRegister'
 import PractitionerRegister from './pages/PractitionerRegister'
 import Login from './pages/Login'
+import Services from './pages/Services'
+import Contact from './pages/Contact'
+import Index from './pages/Index'
 import AdminDashboard from './pages/Dashboard/AdminDashboard'
 import UserManagementPage from './pages/Dashboard/UserManagementPage'
 import RolesManagementPage from './pages/Dashboard/RolesManagementPage'
@@ -26,6 +29,9 @@ export default function App(){
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/services" element={<Services />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/index" element={<Index />} />
       <Route path="/register" element={<PatientRegister />} />
       <Route path="/patient/register" element={<PatientRegister />} />
       <Route path="/practitioner/register" element={<PractitionerRegister />} />

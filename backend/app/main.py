@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from app.db.database import init_db
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import (
@@ -20,6 +20,10 @@ from app.routers import (
     auth,
     mapdata
 )
+from app.db.database import SessionLocal
+from app.db import models
+from app.db import crud as crud_module
+from app.routers.security import decode_access_token
 
 # =========================================================
 # Initialize FastAPI App
@@ -75,6 +79,35 @@ app.include_router(mapdata.router, prefix="/map", tags=["MapData"])
 @app.get("/")
 def root():
     return {"message": "Welcome to the Healthcare Staffing & Management API!"}
+
+# =========================================================
+# Middleware: set createdby from current authenticated user (if any)
+# =========================================================
+@app.middleware("http")
+async def attach_created_by(request: Request, call_next):
+    created_by = "system"
+    try:
+        auth = request.headers.get("authorization") or request.headers.get("Authorization")
+        if auth and auth.lower().startswith("bearer "):
+            token = auth.split()[1]
+            payload = decode_access_token(token)
+            user_id = payload.get("sub")
+            if user_id:
+                db = SessionLocal()
+                try:
+                    u = db.get(models.User, int(user_id))
+                    if u:
+                        created_by = u.email or u.full_name or f"user:{u.id}"
+                finally:
+                    db.close()
+    except Exception:
+        created_by = "system"
+    try:
+        crud_module.set_created_by(created_by)
+    except Exception:
+        pass
+    response = await call_next(request)
+    return response
 
 # =========================================================
 # Optional: Startup & Shutdown Events

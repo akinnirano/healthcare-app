@@ -19,12 +19,19 @@ export default function Home(){
         <div className="flex items-center justify-between rounded-xl bg-gradient-to-b from-rose-50/80 to-rose-100/60 px-4 py-3 ring-1 ring-rose-100 backdrop-blur supports-[backdrop-filter]:bg-rose-50/50 shadow-inner">
           <a href="/" className="text-lg font-semibold text-800">Healthcare Staffing</a>
           <nav className="hidden gap-6 text-sm text-700 sm:flex">
-            <a href="/services" className="hover:text-gray-900">Healthcare Services</a>
-            <a href="/Contact Us" className="hover:text-gray-900">Contact Us</a>
+            <a href="/" className="hover:text-gray-900">Home</a>
+            <a href="/index" className="hover:text-gray-900">About Us</a>
+            <a href="/services" className="hover:text-gray-900">Our Services</a>
+            <a href="/practitioner/register" className="hover:text-gray-900">Join Our Team</a>
+            <a href="/index" className="hover:text-gray-900">Clients / Partners</a>
+            <a href="/contact" className="hover:text-gray-900">Contact Us</a>
+            <a href="/patient/register" className="hover:text-gray-900">Book a Visit / Request Staff</a>
           </nav>
-          <div className="flex items-center gap-3">
-            <a href="/login" className="rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm text-700 shadow-sm transition hover:border-300">Log In</a>
-            <a href="/register" className="rounded-lg   bg-sky-100 px-4 py-2 text-sm text-while-700 shadow-sm transition hover:bg-sky-700">Patient Register</a>
+          <div className="hidden lg:flex items-center gap-2">
+            <a href="tel:+15555555555" className="rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs text-700 shadow-sm transition hover:border-300">Call Now</a>
+            <a href="/contact" className="rounded-lg bg-sky-600 px-3 py-2 text-xs text-white shadow-sm transition hover:bg-sky-700">Request Care</a>
+            <a href="/practitioner/register" className="rounded-lg bg-cyan-600 px-3 py-2 text-xs text-white shadow-sm transition hover:bg-cyan-700">Hire a Worker</a>
+            <a href="/login" className="rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs text-700 shadow-sm transition hover:border-300">Client Portal / Staff Login</a>
           </div>
         </div>
       </header>
@@ -37,8 +44,18 @@ export default function Home(){
         <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-12 sm:pt-16 pb-14 sm:pb-20">
           <div className="grid items-center gap-8 sm:gap-12 sm:grid-cols-2">
             <div className="mx-auto max-w-3xl text-center sm:text-left">
-            <span className="inline-block rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">Healthcare Staffing Platform</span> 
-              <BannerCarousel />
+              <span className="inline-block rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">Care That Comes to You – Compassionate Health Support Anytime, anywhere.</span>
+              <h1 className="mt-6 text-3xl sm:text-6xl font-extrabold tracking-tight text-gray-900">
+                Trusted Mobile Healthcare Solutions for Seniors and Vulnerable Individuals Across Ontario.
+              </h1>
+              <p className="mt-6 text-base sm:text-lg leading-8 text-gray-600">
+                We connect retirement homes, private families, and care facilities with certified Nurses, PSWs, Doctors, and Therapists—anytime, anywhere.
+              </p>
+              <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3 sm:gap-4">
+                <a href="/contact" className="rounded-lg bg-sky-600 px-5 py-3 text-white shadow-sm transition hover:bg-sky-700 w-full sm:w-auto text-center">Request a Caregiver</a>
+                <a href="/practitioner/register" className="rounded-lg border border-sky-200 bg-white px-5 py-3 text-sky-700 shadow-sm transition hover:border-sky-300 w-full sm:w-auto text-center">Hire Medical Staff</a>
+                <a href="/practitioner/register" className="rounded-lg bg-cyan-600 px-5 py-3 text-white shadow-sm transition hover:bg-cyan-700 w-full sm:w-auto text-center">Join Our Team</a>
+              </div>
             </div>
             <div>
               <Slider />
@@ -47,28 +64,36 @@ export default function Home(){
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-24">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-gray-900">Everything you need to run operations</h2>
-          <p className="mt-4 text-gray-600">From onboarding to payroll, our platform streamlines every step.</p>
-        </div>
-        <div className="mt-10 sm:mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <FeatureCard icon="🗂" title="Assignments" desc="Quickly match staff to patient requests based on skills and proximity."/>
-          <FeatureCard icon="🛰" title="Live Tracking" desc="Start and end shifts with precise geolocation for accountability."/>
-          <FeatureCard icon="🧾" title="Timesheets" desc="Simple submissions with automatic hour calculations and approvals."/>
-          <FeatureCard icon="💸" title="Payroll" desc="Accurate, on-time payroll with clear audit trails and reports."/>
-          <FeatureCard icon="🧩" title="Compliance" desc="Track licenses, certifications, and expirations with alerts."/>
-          <FeatureCard icon="📨" title="Invoices" desc="Generate professional invoices and monitor payment status."/>
+      {/* About Us */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-16">
+        <div className="mx-auto max-w-4xl text-center">
+          <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-gray-900">Who We Are</h2>
+          <p className="mt-4 text-gray-600">We are a licensed and insured mobile healthcare staffing and services company, committed to compassion, professionalism, dignity, and respect. Serving GTA, Hamilton, Ottawa and surrounding communities.</p>
         </div>
       </section>
 
-      {/* Stats */}
+      {/* Our Services */}
+      <section id="features" className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-24">
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-gray-900">Our Services</h2>
+          <p className="mt-4 text-gray-600">Certified, vetted healthcare professionals across a full spectrum of care.</p>
+        </div>
+        <div className="mt-10 sm:mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <FeatureCard icon="🤝" title="Personal Support Services" desc="Certified PSWs for hygiene, companionship, meal prep, mobility assistance."/>
+          <FeatureCard icon="🩺" title="Nursing Services" desc="RNs and RPNs for wound care, meds administration, and post-surgery care."/>
+          <FeatureCard icon="👨‍⚕️" title="Physician & Medical Visits" desc="On-call doctors for home/facility visits and telemedicine."/>
+          <FeatureCard icon="🧑‍🦽" title="Physiotherapy & Rehab" desc="In-home physio and post-hospital recovery programs."/>
+          <FeatureCard icon="🧠" title="Specialized Care" desc="Dementia, palliative, disability support tailored to families."/>
+          <FeatureCard icon="🏥" title="Staffing for Institutions" desc="Short- and long-term placements for facilities and clinics."/>
+        </div>
+      </section>
+
+      {/* Why Choose Us */}
       <section className="bg-white py-12 sm:py-16">
         <div className="mx-auto grid max-w-7xl gap-6 px-4 sm:px-6 sm:grid-cols-3">
-          <StatCard label="Staff Onboarded" value="2,450+"/>
-          <StatCard label="Monthly Shifts" value="18,000+"/>
-          <StatCard label="Avg. Approval Time" value="< 3 hrs"/>
+          <StatCard label="24/7 Availability" value="Always On"/>
+          <StatCard label="Vetted Professionals" value="300+"/>
+          <StatCard label="Communities Served" value="15+"/>
         </div>
       </section>
 
@@ -90,18 +115,14 @@ export default function Home(){
         </div>
       </section>
 
-      {/* CTA */}
+      {/* Join Our Team / CTA */}
       <section className="relative isolate mx-auto max-w-7xl overflow-hidden rounded-2xl bg-gradient-to-r from-sky-600 to-cyan-600 px-4 sm:px-10 py-10 sm:py-14 shadow">
         <div className="mx-auto max-w-3xl text-center">
-          <h3 className="text-xl sm:text-3xl font-bold text-white">Ready to streamline staffing?</h3>
-          <p className="mt-3 text-sky-100">Create your account and start assigning in minutes.</p>
+          <h3 className="text-xl sm:text-3xl font-bold text-white">Join Our Team</h3>
+          <p className="mt-3 text-sky-100">We’re always looking for compassionate PSWs, RNs, and therapists. Flexible shifts. Supportive environment.</p>
           <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-            <a href="/practitioner/register" className="rounded-lg bg-white px-5 py-3 font-medium text-sky-700 shadow hover:bg-sky-50 w-full sm:w-auto text-center">
-              Create Healthcare Practitioner
-            </a>
-            <a href="/patient/login" className="rounded-lg border border-white/60 bg-transparent px-5 py-3 font-medium text-white shadow hover:bg-white/10 w-full sm:w-auto text-center">
-              Log In
-            </a>
+            <a href="/practitioner/register" className="rounded-lg bg-white px-5 py-3 font-medium text-sky-700 shadow hover:bg-sky-50 w-full sm:w-auto text-center">Apply Now</a>
+            <a href="/contact" className="rounded-lg border border-white/60 bg-transparent px-5 py-3 font-medium text-white shadow hover:bg-white/10 w-full sm:w-auto text-center">Request Care</a>
           </div>
         </div>
         <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 sm:h-72 sm:w-72 rounded-full bg-white/10 blur-3xl" />
