@@ -2,7 +2,11 @@
 import axios from 'axios'
 
 // Point to same-origin /api by default; override with VITE_API_BASE if provided
-const API_BASE = import.meta.env.VITE_API_BASE || '/api'
+let API_BASE = import.meta.env.VITE_API_BASE || '/api'
+// Prevent mixed content if someone misconfigures VITE_API_BASE with http on an https page
+if (typeof window !== 'undefined' && window.location && window.location.protocol === 'https:' && typeof API_BASE === 'string' && API_BASE.startsWith('http://')) {
+  API_BASE = API_BASE.replace('http://', 'https://')
+}
 
 const api = axios.create({
   baseURL: API_BASE,
