@@ -1,8 +1,8 @@
 
 import axios from 'axios'
 
-// Point to FastAPI by default; override with VITE_API_BASE if provided
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://api.hremsoftconsulting.com:8009'
+// Point to same-origin /api by default; override with VITE_API_BASE if provided
+const API_BASE = import.meta.env.VITE_API_BASE || '/api'
 
 const api = axios.create({
   baseURL: API_BASE,

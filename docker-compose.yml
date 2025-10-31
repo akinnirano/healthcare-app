@@ -29,14 +29,17 @@ services:
       - appnet
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE: /api
     container_name: healthcare_frontend
     depends_on:
       - backend
     ports:
       - "8080:80"
     environment:
-      - VITE_API_BASE=https://api.hremsoftconsulting.com
+      - VITE_API_BASE=/api
 
     networks:
       - appnet

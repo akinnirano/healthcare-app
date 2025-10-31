@@ -12,8 +12,8 @@ COPY package.json ./
 RUN set -eux; npm install --no-audit --no-fund
 
 # Build-time API base (optional). Example override:
-# docker build --build-arg VITE_API_BASE=http://backend:8000 -t frontend .
-ARG VITE_API_BASE=http://backend:8009
+# docker build --build-arg VITE_API_BASE=/api -t frontend .
+ARG VITE_API_BASE=/api
 ENV VITE_API_BASE=${VITE_API_BASE}
 ENV NODE_ENV=production
 
