@@ -22,9 +22,37 @@ export default function Services(){
         </div>
       </header>
 
+      {/* Hero banner (like Home) */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute -top-24 -right-24 h-56 w-56 sm:h-72 sm:w-72 rounded-full bg-sky-100 blur-3xl" />
+          <div className="absolute -bottom-24 -left-24 h-56 w-56 sm:h-72 sm:w-72 rounded-full bg-cyan-100 blur-3xl" />
+        </div>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-12 sm:pt-16 pb-14 sm:pb-20">
+          <div className="grid items-center gap-8 sm:gap-12 sm:grid-cols-2">
+            <div className="mx-auto max-w-3xl text-center sm:text-left">
+              <span className="inline-block rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">Our Services</span>
+              <h1 className="mt-6 text-3xl sm:text-6xl font-extrabold tracking-tight text-gray-900">
+                Compassionate Health Support, On Demand.
+              </h1>
+              <p className="mt-6 text-base sm:text-lg leading-8 text-gray-600">
+                From Personal Support to Nursing, Physiotherapy and Institutional Staffing — our certified professionals deliver care wherever you are.
+              </p>
+              <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3 sm:gap-4">
+                <a href="/contact" className="rounded-lg bg-sky-600 px-5 py-3 text-white shadow-sm transition hover:bg-sky-700 w-full sm:w-auto text-center">Request a Caregiver</a>
+                <a href="/practitioner/register" className="rounded-lg border border-sky-200 bg-white px-5 py-3 text-sky-700 shadow-sm transition hover:border-sky-300 w-full sm:w-auto text-center">Hire Medical Staff</a>
+              </div>
+            </div>
+            <div>
+              <div className="aspect-[4/3] w-full rounded-2xl bg-white ring-1 ring-sky-100 shadow flex items-center justify-center text-sky-700">Service Showcase</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="mx-auto max-w-7xl px-4 sm:px-6 pt-10 pb-12">
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-gray-900">Our Healthcare Services</h1>
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-gray-900">Explore Our Healthcare Services</h1>
           <p className="mt-4 text-gray-600">Flexible, reliable, and compassionate care for families and facilities.</p>
         </div>
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
