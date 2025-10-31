@@ -42,7 +42,7 @@ export default function Home(){
             <div className="mx-auto max-w-3xl text-center sm:text-left">
               <span className="inline-block rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">Care That Comes to You – Compassionate Health Support Anytime, anywhere.</span>
               <h1 className="mt-6 text-3xl sm:text-6xl font-extrabold tracking-tight text-gray-900">
-                Trusted Mobile Healthcare Solutions for Seniors and Vulnerable Individuals Across Ontario.
+                Trusted Healthcare Solutions for {/*Seniors and Vulnerable*/} for the community.
               </h1>
               <p className="mt-6 text-base sm:text-lg leading-8 text-gray-600">
                 We connect retirement homes, private families, and care facilities with certified Nurses, PSWs, Doctors, and Therapists—anytime, anywhere.

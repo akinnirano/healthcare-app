@@ -34,7 +34,10 @@ api.interceptors.request.use(config => {
     if (typeof config.url === 'string') {
       const [path, query] = config.url.split('?')
       const parts = path.split('/').filter(Boolean)
-      if (parts.length === 1 && collections.has(parts[0]) && !path.endsWith('/')) {
+      // Support both "/roles" and "/api/roles" styles
+      const isApiPrefixed = parts.length === 2 && parts[0] === 'api' && collections.has(parts[1])
+      const isRootCollection = parts.length === 1 && collections.has(parts[0])
+      if ((isApiPrefixed || isRootCollection) && !path.endsWith('/')) {
         config.url = `${path}/${query ? `?${query}` : ''}`
       }
     }
