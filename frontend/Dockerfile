@@ -13,7 +13,7 @@ RUN set -eux; npm install --no-audit --no-fund
 
 # Build-time API base (optional). Example override:
 # docker build --build-arg VITE_API_BASE=http://backend:8000 -t frontend .
-ARG VITE_API_BASE=http://backend:8000
+ARG VITE_API_BASE=http://backend:8009
 ENV VITE_API_BASE=${VITE_API_BASE}
 ENV NODE_ENV=production
 
@@ -63,7 +63,7 @@ RUN chown -R nginx:nginx /usr/share/nginx/html || true
 EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD wget -qO- http://localhost/ >/dev/null 2>&1 || exit 1
+  CMD wget -qO- http://api.hremsoftconsulting.com:8009/ >/dev/null 2>&1 || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
 
