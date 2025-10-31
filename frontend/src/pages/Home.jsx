@@ -20,10 +20,8 @@ export default function Home(){
           <a href="/" className="text-lg font-semibold text-800">Healthcare Staffing</a>
           <nav className="hidden gap-6 text-sm text-700 sm:flex">
             <a href="/" className="hover:text-gray-900">Home</a>
-            <a href="/index" className="hover:text-gray-900">About Us</a>
             <a href="/services" className="hover:text-gray-900">Our Services</a>
-            <a href="/practitioner/register" className="hover:text-gray-900">Join Our Team</a>
-            <a href="/index" className="hover:text-gray-900">Clients / Partners</a>
+            <a href="/practitioner/register" className="hover:text-gray-900">Join Our Team</a> 
             <a href="/contact" className="hover:text-gray-900">Contact Us</a>
             <a href="/patient/register" className="hover:text-gray-900">Book a Visit / Request Staff</a>
           </nav>
