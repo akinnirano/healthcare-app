@@ -78,7 +78,7 @@ function TopNav({ onSelect, onLogout, onToggleSidebar, titleSuffix }) {
 function SideNav({ open, onToggle, active, onSelect, onLogout }) {
   return (
     <nav className="rounded-2xl bg-slate-900 text-slate-200 p-3 shadow-sm h-[calc(100vh-5.5rem)] overflow-y-auto">
-      <a href="/dashboard" className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-200 hover:bg-slate-800`}>
+      <a href="/dashboard/home" className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-200 hover:bg-slate-800`}>
         <HomeIcon /> Dashboard
       </a>
 

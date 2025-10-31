@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from app.db.database import init_db
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import (
@@ -23,7 +23,7 @@ from app.routers import (
 from app.db.database import SessionLocal
 from app.db import models
 from app.db import crud as crud_module
-from app.routers.security import decode_access_token
+from app.routers.security import decode_access_token, get_current_active_user
 
 # =========================================================
 # Initialize FastAPI App
@@ -55,23 +55,24 @@ init_db()  # Creates all tables if they don't exist
 # =========================================================
 # Include Routers
 # =========================================================
-app.include_router(auth.router, prefix="/auth", tags=["Auth"])
-app.include_router(users.router, prefix="/users", tags=["Users"])
-app.include_router(roles.router, prefix="/roles", tags=["Roles"])
-app.include_router(staff.router, prefix="/staff", tags=["Staff"])
-app.include_router(patients.router, prefix="/patients", tags=["Patients"])
-app.include_router(service_requests.router, prefix="/service_requests", tags=["Service Requests"])
-app.include_router(assignments.router, prefix="/assignments", tags=["Assignments"])
-app.include_router(shifts.router, prefix="/shifts", tags=["Shifts"])
-app.include_router(timesheets.router, prefix="/timesheets", tags=["Timesheets"])
-app.include_router(payroll.router, prefix="/payroll", tags=["Payroll"])
-app.include_router(priviledges.router, prefix="/priviledges", tags=["Priviledges"])
-app.include_router(invoices.router, prefix="/invoices", tags=["Invoices"])
-app.include_router(compliance.router, prefix="/compliance", tags=["Compliance"])
-app.include_router(operations.router, prefix="/operations", tags=["Operations"])
-app.include_router(visits.router, prefix="/visits", tags=["Visits"])
-app.include_router(feedback.router, prefix="/feedback", tags=["Feedback"])
-app.include_router(mapdata.router, prefix="/map", tags=["MapData"]) 
+app.include_router(auth.router, prefix="/auth", tags=["Auth"])  # public
+secured = [Depends(get_current_active_user)]
+app.include_router(users.router, prefix="/users", tags=["Users"], dependencies=secured)
+app.include_router(roles.router, prefix="/roles", tags=["Roles"], dependencies=secured)
+app.include_router(staff.router, prefix="/staff", tags=["Staff"], dependencies=secured)
+app.include_router(patients.router, prefix="/patients", tags=["Patients"], dependencies=secured)
+app.include_router(service_requests.router, prefix="/service_requests", tags=["Service Requests"], dependencies=secured)
+app.include_router(assignments.router, prefix="/assignments", tags=["Assignments"], dependencies=secured)
+app.include_router(shifts.router, prefix="/shifts", tags=["Shifts"], dependencies=secured)
+app.include_router(timesheets.router, prefix="/timesheets", tags=["Timesheets"], dependencies=secured)
+app.include_router(payroll.router, prefix="/payroll", tags=["Payroll"], dependencies=secured)
+app.include_router(priviledges.router, prefix="/priviledges", tags=["Priviledges"], dependencies=secured)
+app.include_router(invoices.router, prefix="/invoices", tags=["Invoices"], dependencies=secured)
+app.include_router(compliance.router, prefix="/compliance", tags=["Compliance"], dependencies=secured)
+app.include_router(operations.router, prefix="/operations", tags=["Operations"], dependencies=secured)
+app.include_router(visits.router, prefix="/visits", tags=["Visits"], dependencies=secured)
+app.include_router(feedback.router, prefix="/feedback", tags=["Feedback"], dependencies=secured)
+app.include_router(mapdata.router, prefix="/map", tags=["MapData"], dependencies=secured) 
 
 # =========================================================
 # Root Endpoint
