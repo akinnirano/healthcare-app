@@ -19,16 +19,14 @@ export default function Home(){
         <div className="flex items-center justify-between rounded-xl bg-gradient-to-b from-rose-50/80 to-rose-100/60 px-4 py-3 ring-1 ring-rose-100 backdrop-blur supports-[backdrop-filter]:bg-rose-50/50 shadow-inner">
           <a href="/" className="text-lg font-semibold text-800">Healthcare Staffing</a>
           <nav className="hidden gap-6 text-sm text-700 sm:flex">
-            <a href="/" className="hover:text-gray-900">Home</a>
             <a href="/services" className="hover:text-gray-900">Our Services</a>
             <a href="/practitioner/register" className="hover:text-gray-900">Join Our Team</a> 
             <a href="/contact" className="hover:text-gray-900">Contact Us</a>
-            <a href="/patient/register" className="hover:text-gray-900">Book a Visit / Request Staff</a>
           </nav>
           <div className="hidden lg:flex items-center gap-2">
-            <a href="tel:+15555555555" className="rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs text-700 shadow-sm transition hover:border-300">Call Now</a>
+
             <a href="/contact" className="rounded-lg bg-sky-600 px-3 py-2 text-xs text-white shadow-sm transition hover:bg-sky-700">Request Care</a>
-            <a href="/practitioner/register" className="rounded-lg bg-cyan-600 px-3 py-2 text-xs text-white shadow-sm transition hover:bg-cyan-700">Hire a Worker</a>
+
             <a href="/login" className="rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs text-700 shadow-sm transition hover:border-300">Client Portal / Staff Login</a>
           </div>
         </div>
@@ -68,6 +66,8 @@ export default function Home(){
           <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-gray-900">Who We Are</h2>
           <p className="mt-4 text-gray-600">We are a licensed and insured mobile healthcare staffing and services company, committed to compassion, professionalism, dignity, and respect. Serving GTA, Hamilton, Ottawa and surrounding communities.</p>
         </div>
+     {/*   <a href="tel:+15555555555" className="rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs text-700 shadow-sm transition hover:border-300">Call Now</a>
+        <a href="/practitioner/register" className="rounded-lg bg-cyan-600 px-3 py-2 text-xs text-white shadow-sm transition hover:bg-cyan-700">Hire a Worker</a> */}
       </section>
 
       {/* Our Services */}
