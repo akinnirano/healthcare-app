@@ -16,6 +16,19 @@ const api = axios.create({
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('access_token')
   if (token) config.headers.Authorization = `Bearer ${token}`
+  // Normalize URLs for collection endpoints to include trailing slash to avoid 308 redirects
+  try {
+    const collections = new Set([
+      'users','roles','staff','patients','service_requests','assignments','shifts','timesheets','payroll','invoices','compliance','visits','feedback','priviledges','operations','map'
+    ])
+    if (typeof config.url === 'string') {
+      const [path, query] = config.url.split('?')
+      const parts = path.split('/').filter(Boolean)
+      if (parts.length === 1 && collections.has(parts[0]) && !path.endsWith('/')) {
+        config.url = `${path}/${query ? `?${query}` : ''}`
+      }
+    }
+  } catch (_) { /* no-op */ }
   return config
 })
 
