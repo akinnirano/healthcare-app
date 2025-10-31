@@ -9,10 +9,8 @@ export default function Services(){
           <a href="/" className="text-lg font-semibold">Healthcare Staffing</a>
           <nav className="hidden gap-6 text-sm sm:flex">
             <a href="/" className="hover:text-gray-900">Home</a>
-            <a href="/index" className="hover:text-gray-900">About Us</a>
             <a href="/services" className="hover:text-gray-900">Our Services</a>
             <a href="/practitioner/register" className="hover:text-gray-900">Join Our Team</a>
-            <a href="/index" className="hover:text-gray-900">Clients / Partners</a>
             <a href="/contact" className="hover:text-gray-900">Contact Us</a>
           </nav>
           <div className="hidden lg:flex items-center gap-2">
