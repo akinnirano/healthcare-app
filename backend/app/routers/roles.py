@@ -3,13 +3,14 @@ from sqlalchemy.orm import Session
 from typing import List
 from ..db import models, crud
 from ..db.database import get_db
+from .security import get_current_active_user
 
 router = APIRouter()
 
 # --------------------------
 # CREATE ROLE WITH PRIVILEGES
 # --------------------------
-@router.post("/", response_model=dict)
+@router.post("/", response_model=dict, summary="Create role (public for registration)")
 def create_role(name: str, description: str = None, privilege_ids: List[int] = [], db: Session = Depends(get_db)):
     existing_role = db.query(models.Role).filter(models.Role.name == name).first()
     if existing_role:
@@ -33,7 +34,7 @@ def create_role(name: str, description: str = None, privilege_ids: List[int] = [
 # --------------------------
 # GET ROLE BY ID
 # --------------------------
-@router.get("/{role_id}", response_model=dict)
+@router.get("/{role_id}", response_model=dict, summary="Get role (public for registration)")
 def get_role(role_id: int, db: Session = Depends(get_db)):
     role = crud.get_role(db, role_id)
     if not role:
@@ -48,7 +49,7 @@ def get_role(role_id: int, db: Session = Depends(get_db)):
 # --------------------------
 # LIST ALL ROLES
 # --------------------------
-@router.get("/", response_model=List[dict])
+@router.get("/", response_model=List[dict], summary="List roles (public for registration)")
 def list_roles(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     roles = crud.list_roles(db, skip=skip, limit=limit)
     return [
@@ -63,7 +64,7 @@ def list_roles(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 # --------------------------
 # UPDATE ROLE
 # --------------------------
-@router.put("/{role_id}", response_model=dict)
+@router.put("/{role_id}", response_model=dict, summary="Update role (public for registration)")
 def update_role(role_id: int, name: str = None, description: str = None, privilege_ids: List[int] = None, db: Session = Depends(get_db)):
     role = crud.update_role(db, role_id, name=name, description=description)
     if not role:
@@ -85,8 +86,8 @@ def update_role(role_id: int, name: str = None, description: str = None, privile
 # --------------------------
 # DELETE ROLE
 # --------------------------
-@router.delete("/{role_id}", response_model=dict)
-def delete_role(role_id: int, db: Session = Depends(get_db)):
+@router.delete("/{role_id}", response_model=dict, summary="Delete role (requires JWT)")
+def delete_role(role_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
     role = crud.delete_role(db, role_id)
     if not role:
         raise HTTPException(status_code=404, detail="Role not found")

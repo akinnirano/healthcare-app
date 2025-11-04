@@ -7,10 +7,11 @@ from datetime import datetime, timedelta
 from ..db import models, crud
 from ..db.database import get_db
 from ..utils.emailer import send_email
+from .security import get_current_active_user
 
 router = APIRouter()
 
-@router.post("/", response_model=dict)
+@router.post("/", response_model=dict, summary="Create user (public for registration)")
 def create_user(full_name: str, email: str, password_hash: str, role_id: Optional[int] = None, phone: str = None, db: Session = Depends(get_db)):
     # Validate duplicate email
     existing = db.query(models.User).filter(models.User.email == email).first()
@@ -66,20 +67,20 @@ def create_user(full_name: str, email: str, password_hash: str, role_id: Optiona
 
     return {"id": user.id, "full_name": user.full_name, "email": user.email, "role_id": user.role_id}
 
-@router.get("/{user_id}", response_model=dict)
-def get_user(user_id: int, db: Session = Depends(get_db)):
+@router.get("/{user_id}", response_model=dict, summary="Get user (requires JWT)")
+def get_user(user_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
     user = crud.get_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return {"id": user.id, "full_name": user.full_name, "email": user.email, "role_id": user.role_id}
 
-@router.get("/", response_model=List[dict])
-def list_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+@router.get("/", response_model=List[dict], summary="List users (requires JWT)")
+def list_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
     users = crud.list_users(db, skip=skip, limit=limit)
     return [{"id": u.id, "full_name": u.full_name, "email": u.email, "role_id": u.role_id} for u in users]
 
-@router.put("/{user_id}", response_model=dict)
-def update_user(user_id: int, full_name: str = None, email: str = None, role_id: int = None, phone: str = None, db: Session = Depends(get_db)):
+@router.put("/{user_id}", response_model=dict, summary="Update user (requires JWT)")
+def update_user(user_id: int, full_name: str = None, email: str = None, role_id: int = None, phone: str = None, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
     if email:
         other = db.query(models.User).filter(models.User.email == email, models.User.id != user_id).first()
         if other:
@@ -93,8 +94,8 @@ def update_user(user_id: int, full_name: str = None, email: str = None, role_id:
         raise HTTPException(status_code=404, detail="User not found")
     return {"id": user.id, "full_name": user.full_name, "email": user.email, "role_id": user.role_id}
 
-@router.delete("/{user_id}", response_model=dict)
-def delete_user(user_id: int, db: Session = Depends(get_db)):
+@router.delete("/{user_id}", response_model=dict, summary="Delete user (requires JWT)")
+def delete_user(user_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
     user = crud.delete_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

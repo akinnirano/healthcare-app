@@ -55,18 +55,24 @@ init_db()  # Creates all tables if they don't exist
 # =========================================================
 # Include Routers
 # =========================================================
-app.include_router(auth.router, prefix="/auth", tags=["Auth"])  # public
+# Public endpoints (no JWT required)
+app.include_router(auth.router, prefix="/auth", tags=["Auth"])  # login, verify email, etc.
+
+# Registration endpoints (no JWT required for POST operations used by registration)
+# Individual endpoints will handle authentication where needed
+app.include_router(users.router, prefix="/users", tags=["Users"])  # POST for registration
+app.include_router(roles.router, prefix="/roles", tags=["Roles"])  # GET for registration (role lookup)
+app.include_router(staff.router, prefix="/staff", tags=["Staff"])  # POST for practitioner registration
+app.include_router(patients.router, prefix="/patients", tags=["Patients"])  # POST for patient registration
+app.include_router(priviledges.router, prefix="/priviledges", tags=["Priviledges"])  # GET/POST for admin setup
+
+# Protected endpoints (JWT required for all operations)
 secured = [Depends(get_current_active_user)]
-app.include_router(users.router, prefix="/users", tags=["Users"], dependencies=secured)
-app.include_router(roles.router, prefix="/roles", tags=["Roles"], dependencies=secured)
-app.include_router(staff.router, prefix="/staff", tags=["Staff"], dependencies=secured)
-app.include_router(patients.router, prefix="/patients", tags=["Patients"], dependencies=secured)
 app.include_router(service_requests.router, prefix="/service_requests", tags=["Service Requests"], dependencies=secured)
 app.include_router(assignments.router, prefix="/assignments", tags=["Assignments"], dependencies=secured)
 app.include_router(shifts.router, prefix="/shifts", tags=["Shifts"], dependencies=secured)
 app.include_router(timesheets.router, prefix="/timesheets", tags=["Timesheets"], dependencies=secured)
 app.include_router(payroll.router, prefix="/payroll", tags=["Payroll"], dependencies=secured)
-app.include_router(priviledges.router, prefix="/priviledges", tags=["Priviledges"], dependencies=secured)
 app.include_router(invoices.router, prefix="/invoices", tags=["Invoices"], dependencies=secured)
 app.include_router(compliance.router, prefix="/compliance", tags=["Compliance"], dependencies=secured)
 app.include_router(operations.router, prefix="/operations", tags=["Operations"], dependencies=secured)
