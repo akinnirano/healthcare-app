@@ -87,10 +87,29 @@ app.include_router(location.router, prefix="/location", tags=["Location"], depen
 # =========================================================
 # Serve Documentation Website
 # =========================================================
-# Check if docs-website dist folder exists and mount it
-docs_dist_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "docs-website", "dist")
-if os.path.exists(docs_dist_path):
-    app.mount("/docs-website", StaticFiles(directory=docs_dist_path, html=True), name="docs-website")
+# Try multiple paths to find docs-website dist folder
+docs_dist_path = None
+possible_paths = [
+    "/app/docs-website/dist",  # Docker container path
+    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "docs-website", "dist"),  # Relative path
+    os.path.join(os.getcwd(), "docs-website", "dist"),  # Current working directory
+]
+
+for path in possible_paths:
+    if os.path.exists(path) and os.path.isdir(path):
+        docs_dist_path = path
+        print(f"✓ Found docs-website at: {docs_dist_path}")
+        break
+
+if docs_dist_path:
+    try:
+        app.mount("/docs-website", StaticFiles(directory=docs_dist_path, html=True), name="docs-website")
+        print(f"✓ Mounted documentation website at /docs-website/")
+    except Exception as e:
+        print(f"✗ Failed to mount docs-website: {e}")
+else:
+    print("⚠ docs-website/dist not found. Documentation will not be available.")
+    print(f"  Searched paths: {possible_paths}")
 
 # =========================================================
 # Root Endpoint
