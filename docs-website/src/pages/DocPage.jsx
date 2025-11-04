@@ -45,7 +45,8 @@ export default function DocPage() {
     setLoading(true)
     setError(null)
 
-    fetch(`/docs/${doc.file}`)
+    // Use base path for markdown files (works with /docs-website/ base)
+    fetch(`/docs-website/docs/${doc.file}`)
       .then(res => {
         if (!res.ok) throw new Error('Failed to load documentation')
         return res.text()
