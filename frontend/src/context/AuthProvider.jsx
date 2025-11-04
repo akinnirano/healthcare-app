@@ -1,8 +1,27 @@
 import React, { createContext, useState, useEffect, useRef } from 'react'
 import { getUserFromToken } from '../utils/jwt'
-import api, { login as apiLogin, isTokenValid } from '../api/axios'
+import api, { login as apiLogin } from '../api/axios'
 
 export const AuthContext = createContext()
+
+/**
+ * Verify if current token is valid
+ * @returns {boolean}
+ */
+function isTokenValid(){
+  const token = localStorage.getItem('access_token')
+  if (!token) return false
+  
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    const exp = payload.exp
+    if (!exp) return false
+    // Check if token expires in more than 1 minute
+    return (exp * 1000) > (Date.now() + 60000)
+  } catch (e) {
+    return false
+  }
+}
 
 /**
  * AuthProvider manages authentication state and JWT token lifecycle
