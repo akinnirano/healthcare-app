@@ -114,7 +114,8 @@ def update_user(db: Session, user_id: int, **kwargs):
     if not user:
         return None
     for key, value in kwargs.items():
-        if hasattr(user, key):
+        # Only update fields that are provided (not None)
+        if hasattr(user, key) and value is not None:
             setattr(user, key, value)
     db.commit()
     db.refresh(user)
@@ -149,7 +150,8 @@ def update_staff(db: Session, staff_id: int, **kwargs):
     if not staff:
         return None
     for key, value in kwargs.items():
-        if hasattr(staff, key):
+        # Only update fields that are provided (not None)
+        if hasattr(staff, key) and value is not None:
             setattr(staff, key, value)
     db.commit()
     db.refresh(staff)
@@ -187,7 +189,8 @@ def update_patient(db: Session, patient_id: int, **kwargs):
     if not patient:
         return None
     for key, value in kwargs.items():
-        if hasattr(patient, key):
+        # Only update fields that are provided (not None)
+        if hasattr(patient, key) and value is not None:
             setattr(patient, key, value)
     db.commit()
     db.refresh(patient)
@@ -222,7 +225,8 @@ def update_service_request(db: Session, request_id: int, **kwargs):
     if not request:
         return None
     for key, value in kwargs.items():
-        if hasattr(request, key):
+        # Only update fields that are provided (not None)
+        if hasattr(request, key) and value is not None:
             setattr(request, key, value)
     db.commit()
     db.refresh(request)
@@ -257,7 +261,8 @@ def update_assignment(db: Session, assignment_id: int, **kwargs):
     if not assignment:
         return None
     for key, value in kwargs.items():
-        if hasattr(assignment, key):
+        # Only update fields that are provided (not None)
+        if hasattr(assignment, key) and value is not None:
             setattr(assignment, key, value)
     db.commit()
     db.refresh(assignment)
