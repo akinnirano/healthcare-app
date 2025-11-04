@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState, useContext } from 'react'
 import api from '../api/axios'
 import { AuthContext } from '../context/AuthProvider'
+import { useGPSTracking } from '../hooks/useGPSTracking'
+import GPSStatus from './GPSStatus'
 
 // Load Leaflet from CDN (no npm dependency)
 async function loadLeaflet(){
@@ -48,6 +50,9 @@ export default function MapTracker(){
   const [orgFilter] = useState(() => {
     try { return new URLSearchParams(window.location.search).get('org') || '' } catch (_) { return '' }
   })
+  
+  // GPS Tracking - automatically updates backend every 30 seconds
+  const gpsTracking = useGPSTracking({ updateInterval: 30000, autoUpdate: true })
   const mapRef = useRef(null)
   const staffLayerRef = useRef(null)
   const patientLayerRef = useRef(null)
@@ -274,33 +279,40 @@ export default function MapTracker(){
     }
   }, [staff, patients, users, geoCache])
 
-  // Track user's device location (phone/system) if permitted
+  // Track user's device location (phone/system) and display on map
   useEffect(() => {
     const L = window.L
     const map = mapRef.current
     if (!L || !map || !youLayerRef.current) return
     const youLayer = youLayerRef.current
-    let youMarker = null
-    let watchId = null
-    if (navigator.geolocation){
-      watchId = navigator.geolocation.watchPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords
-          youLayer.clearLayers()
-          const who = (user && (user.full_name || user.email)) ? ` - ${String(user.full_name || user.email)}` : ''
-          youMarker = L.circleMarker([latitude, longitude], { color: '#065f46', fillColor: '#10b981', fillOpacity: 0.6, radius: 7, weight: 2 })
-            .bindPopup(`<strong>You${who}</strong>`)
-            .addTo(youLayer)
-        },
-        () => {},
-        { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
+    
+    // Use GPS tracking from hook
+    if (gpsTracking.latitude !== null && gpsTracking.longitude !== null) {
+      youLayer.clearLayers()
+      const who = (user && (user.full_name || user.email)) ? ` - ${String(user.full_name || user.email)}` : ''
+      const accuracy = gpsTracking.accuracy ? `<br/><small>Accuracy: ${Math.round(gpsTracking.accuracy)}m</small>` : ''
+      const marker = L.circleMarker(
+        [gpsTracking.latitude, gpsTracking.longitude], 
+        { color: '#065f46', fillColor: '#10b981', fillOpacity: 0.6, radius: 7, weight: 2 }
       )
+        .bindPopup(`<strong>You${who}</strong><br/><small>${gpsTracking.latitude.toFixed(6)}, ${gpsTracking.longitude.toFixed(6)}</small>${accuracy}`)
+        .addTo(youLayer)
     }
-    return () => { if (watchId && navigator.geolocation) navigator.geolocation.clearWatch(watchId) }
-  }, [])
+  }, [gpsTracking.latitude, gpsTracking.longitude, user])
 
   return (
     <div className="rounded-2xl border border-slate-100 bg-white p-2">
+      {/* GPS Status Indicator */}
+      <div className="px-4 py-3 border-b border-gray-100">
+        <GPSStatus 
+          latitude={gpsTracking.latitude}
+          longitude={gpsTracking.longitude}
+          accuracy={gpsTracking.accuracy}
+          error={gpsTracking.error}
+          isTracking={gpsTracking.isTracking}
+        />
+      </div>
+      
       <div ref={mapEl} className="h-[800px] w-full py-6 rounded-lg" />
       <div className="flex items-center gap-4 px-2 py-2 text-xs text-slate-600">
         <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-blue-600"></span> Patients</span>

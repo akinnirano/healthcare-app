@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import api from '../api/axios'
 import { AuthContext } from '../context/AuthProvider'
+import { useGPSTracking } from '../hooks/useGPSTracking'
 import { TopNav, SideNav } from '../pages/Dashboard/AdminDashboard'
 import staffMarkerUrl from '../../images/staff1.png'
 import patientMarkerUrl from '../../images/marker.png'
@@ -248,23 +249,15 @@ export default function SpecificMapTracker(){
     } catch(_) {}
   }, [assignments, patients, serviceReqById, staffItem, youPos])
 
-  // Track live user location
+  // GPS Tracking - automatically updates backend every 30 seconds
+  const gpsTracking = useGPSTracking({ updateInterval: 30000, autoUpdate: true })
+  
+  // Update youPos state when GPS tracking updates
   useEffect(() => {
-    const L = window.L
-    const map = mapRef.current
-    if (!L || !map) return
-    let watchId = null
-    if (navigator.geolocation){
-      watchId = navigator.geolocation.watchPosition(
-        (pos) => {
-          setYouPos({ lat: pos.coords.latitude, lon: pos.coords.longitude })
-        },
-        () => {},
-        { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
-      )
+    if (gpsTracking.latitude !== null && gpsTracking.longitude !== null) {
+      setYouPos({ lat: gpsTracking.latitude, lon: gpsTracking.longitude })
     }
-    return () => { if (watchId && navigator.geolocation) navigator.geolocation.clearWatch(watchId) }
-  }, [])
+  }, [gpsTracking.latitude, gpsTracking.longitude])
 
   const staffName = useMemo(() => {
     const uName = user && (user.full_name || user.email)

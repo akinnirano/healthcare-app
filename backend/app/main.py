@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Request, Depends
+from fastapi.staticfiles import StaticFiles
 from app.db.database import init_db
 from fastapi.middleware.cors import CORSMiddleware
+import os
 from app.routers import (
     assignments,
     compliance,
@@ -18,7 +20,8 @@ from app.routers import (
     users,
     visits,
     auth,
-    mapdata
+    mapdata,
+    location
 )
 from app.db.database import SessionLocal
 from app.db import models
@@ -78,7 +81,16 @@ app.include_router(compliance.router, prefix="/compliance", tags=["Compliance"],
 app.include_router(operations.router, prefix="/operations", tags=["Operations"], dependencies=secured)
 app.include_router(visits.router, prefix="/visits", tags=["Visits"], dependencies=secured)
 app.include_router(feedback.router, prefix="/feedback", tags=["Feedback"], dependencies=secured)
-app.include_router(mapdata.router, prefix="/map", tags=["MapData"], dependencies=secured) 
+app.include_router(mapdata.router, prefix="/map", tags=["MapData"], dependencies=secured)
+app.include_router(location.router, prefix="/location", tags=["Location"], dependencies=secured) 
+
+# =========================================================
+# Serve Documentation Website
+# =========================================================
+# Check if docs-website dist folder exists and mount it
+docs_dist_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "docs-website", "dist")
+if os.path.exists(docs_dist_path):
+    app.mount("/docs-website", StaticFiles(directory=docs_dist_path, html=True), name="docs-website")
 
 # =========================================================
 # Root Endpoint
