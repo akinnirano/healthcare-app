@@ -45,10 +45,12 @@ export default function DocPage() {
     setLoading(true)
     setError(null)
 
-    // Use base path for markdown files (works with /docs-website/ base)
+    // Use relative path - Vite copies public/ to dist/ during build
     fetch(`/docs-website/docs/${doc.file}`)
       .then(res => {
-        if (!res.ok) throw new Error('Failed to load documentation')
+        if (!res.ok) {
+          throw new Error(`Failed to load documentation: ${res.status} ${res.statusText}`)
+        }
         return res.text()
       })
       .then(text => {
@@ -56,10 +58,11 @@ export default function DocPage() {
         setLoading(false)
       })
       .catch(err => {
+        console.error('Error loading markdown:', err)
         setError(err.message)
         setLoading(false)
       })
-  }, [slug])
+  }, [slug, doc.file])
 
   if (loading) {
     return (

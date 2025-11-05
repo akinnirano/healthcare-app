@@ -104,49 +104,54 @@ for path in possible_paths:
 
 if docs_dist_path:
     try:
-        # Mount static files (CSS, JS, images, etc.) first
-        # This will handle files like /docs-website/assets/...
-        static_files = StaticFiles(directory=docs_dist_path)
-        app.mount("/docs-website/assets", static_files, name="docs-assets")
+        from starlette.responses import Response
         
-        # Also mount docs folder for markdown files
-        docs_public_path = os.path.join(docs_dist_path, "docs")
-        if os.path.exists(docs_public_path):
-            app.mount("/docs-website/docs", StaticFiles(directory=docs_public_path), name="docs-markdown")
-        
-        # Catch-all route for React Router client-side routing
-        # This must be AFTER the static mounts but handles all other paths
+        # Custom handler for React Router SPA
         @app.get("/docs-website/{full_path:path}")
-        async def serve_docs_website(full_path: str):
+        async def serve_docs_spa(request: Request, full_path: str):
             """
-            Serve React Router app. For client-side routes like /docs-website/getting-started,
-            serve index.html so React Router can handle the routing.
+            Serve React SPA with proper routing support.
+            - Serves actual files (JS, CSS, images, etc.) if they exist
+            - Serves index.html for all other paths (React Router routes)
             """
-            # Check if it's a file request (has extension)
-            if '.' in full_path and '/' not in full_path.split('/')[-1]:
-                # It might be a direct file request, try to serve it
-                file_path = os.path.join(docs_dist_path, full_path)
-                if os.path.isfile(file_path):
-                    return FileResponse(file_path)
+            # Try to serve the actual file first
+            file_path = os.path.join(docs_dist_path, full_path)
             
-            # For all other paths (React Router routes), serve index.html
+            # If it's a file that exists, serve it
+            if os.path.isfile(file_path):
+                # Determine content type
+                import mimetypes
+                content_type, _ = mimetypes.guess_type(file_path)
+                with open(file_path, 'rb') as f:
+                    content = f.read()
+                return Response(content=content, media_type=content_type or 'application/octet-stream')
+            
+            # If not a file, serve index.html (for React Router)
             index_path = os.path.join(docs_dist_path, "index.html")
             if os.path.isfile(index_path):
-                return FileResponse(index_path)
+                with open(index_path, 'r', encoding='utf-8') as f:
+                    html_content = f.read()
+                return Response(content=html_content, media_type='text/html')
+            
             raise HTTPException(status_code=404, detail="Documentation not found")
         
-        # Also handle root /docs-website path
+        # Root docs-website path
         @app.get("/docs-website/")
-        async def serve_docs_root():
-            """Serve index.html for /docs-website/ root path"""
+        @app.get("/docs-website")
+        async def serve_docs_root(request: Request):
+            """Serve index.html for root /docs-website path"""
             index_path = os.path.join(docs_dist_path, "index.html")
             if os.path.isfile(index_path):
-                return FileResponse(index_path)
+                with open(index_path, 'r', encoding='utf-8') as f:
+                    html_content = f.read()
+                return Response(content=html_content, media_type='text/html')
             raise HTTPException(status_code=404, detail="Documentation not found")
         
+        print(f"✓ Found docs-website at: {docs_dist_path}")
         print(f"✓ Mounted documentation website at /docs-website/")
+        print(f"✓ React Router SPA support enabled")
     except Exception as e:
-        print(f"✗ Failed to mount docs-website: {e}")
+        print(f"✗ Failed to setup docs-website: {e}")
         import traceback
         traceback.print_exc()
 else:
