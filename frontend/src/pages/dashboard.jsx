@@ -143,6 +143,8 @@ function TopNav({ onSelect, onLogout, onToggleSidebar }) {
 
 function SideNav({ open, onToggle, active, onSelect, onLogout, role }) {
   const isPatient = role === 'patient'
+  const isStaffRole = ['psw', 'rn', 'doctor', 'staff', 'practitioner', 'nurse'].includes(role)
+  const isAdminRole = ['admin', 'hr', 'finance'].includes(role)
   
   return (
     <nav className="rounded-2xl bg-slate-900 text-slate-200 p-3 shadow-sm h-[calc(100vh-5.5rem)] overflow-y-auto">
@@ -151,10 +153,31 @@ function SideNav({ open, onToggle, active, onSelect, onLogout, role }) {
       </button>
 
       {isPatient ? (
+        // Patient Menu (3 items)
         <div className="ml-3 mt-2 grid gap-1">
           <a href="/dashboard/track" className={navSubItemCls(active === "track") + " flex items-center"}><MapIcon /> Track Staff</a>
           <a href="/dashboard/feedback" className={navSubItemCls(active === "feedback") + " flex items-center"}><ChatIcon /> Feedback</a>
         </div>
+      ) : isStaffRole ? (
+        // Staff Menu (PSW, RN, Doctor, Nurse, Practitioner)
+        <>
+          <SectionHeader title="My Work" open={open.account || true} onToggle={() => onToggle("account")} />
+          <div className="ml-3 grid gap-1">
+            <button onClick={() => onSelect("map")} className={navSubItemCls(active === "map") + " flex items-center"}><MapIcon /> View Map</button>
+            <a href="/dashboard/assignments" className={navSubItemCls(active === "assignments") + " flex items-center"}><SwapIcon /> My Assignments</a>
+            <a href="/dashboard/visits" className={navSubItemCls(active === "visits") + " flex items-center"}><StethoscopeIcon /> My Visits</a>
+            <button onClick={() => onSelect("payroll")} className={navSubItemCls(active === "payroll") + " flex items-center"}><CashIcon /> My Payroll</button>
+            <a href="/dashboard/feedback" className={navSubItemCls(active === "feedback") + " flex items-center"}><ChatIcon /> My Feedback</a>
+            <a href="/dashboard/compliance" className={navSubItemCls(active === "compliance") + " flex items-center"}><CheckIcon /> My Compliance</a>
+          </div>
+          
+          <SectionHeader title="Operations" open={open.ops || true} onToggle={() => onToggle("ops")} />
+          <div className="ml-3 grid gap-1">
+            <a href="/dashboard/startshift" className={navSubItemCls(active === "startshift") + " flex items-center"}><PlayIcon /> Start Shift</a>
+            <a href="/dashboard/endshift" className={navSubItemCls(active === "endshift") + " flex items-center"}><StopIcon /> End Shift</a>
+            <a href="/dashboard/timesheets" className={navSubItemCls(active === "timesheets") + " flex items-center"}><DocumentIcon /> My Timesheets</a>
+          </div>
+        </>
       ) : (
         <>
           {/* Account Management */}
