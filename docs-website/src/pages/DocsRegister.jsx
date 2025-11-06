@@ -45,7 +45,7 @@ export default function DocsRegister() {
 
     try {
       // Register user with "docs" role
-      const response = await axios.post('/api/docs/register', {
+      const response = await axios.post('/docs/register', {
         full_name: formData.fullName,
         email: formData.email,
         phone: formData.phone,
