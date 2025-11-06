@@ -266,7 +266,7 @@ export default function DocsRegister() {
           <div className="mt-6 pt-6 border-t border-slate-700">
             <p className="text-center text-sm text-gray-400">
               Already have an account?{' '}
-              <Link to="/login" className="text-teal-400 hover:text-teal-300 font-medium transition">
+              <Link to="/docs-website/login" className="text-teal-400 hover:text-teal-300 font-medium transition">
                 Sign in here
               </Link>
             </p>
