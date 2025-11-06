@@ -283,3 +283,20 @@ class EmailToken(Base):
     created_at = Column(DateTime, server_default=func.now())
     createdby = Column(String(255), default="system")
     datecreated = Column(DateTime, server_default=func.now())
+
+# =========================================================
+# DOCUMENTATION API KEYS
+# =========================================================
+class DocsApiKey(Base):
+    __tablename__ = "docs_api_keys"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    key = Column(String(255), unique=True, nullable=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, server_default=func.now())
+    last_used = Column(DateTime, nullable=True)
+    
+    user = relationship("User", backref="api_keys")
+    createdby = Column(String(255), default="system")
+    datecreated = Column(DateTime, server_default=func.now())

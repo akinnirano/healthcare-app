@@ -22,7 +22,8 @@ from app.routers import (
     visits,
     auth,
     mapdata,
-    location
+    location,
+    docs_api
 )
 from app.db.database import SessionLocal
 from app.db import models
@@ -83,7 +84,10 @@ app.include_router(operations.router, prefix="/operations", tags=["Operations"],
 app.include_router(visits.router, prefix="/visits", tags=["Visits"], dependencies=secured)
 app.include_router(feedback.router, prefix="/feedback", tags=["Feedback"], dependencies=secured)
 app.include_router(mapdata.router, prefix="/map", tags=["MapData"], dependencies=secured)
-app.include_router(location.router, prefix="/location", tags=["Location"], dependencies=secured) 
+app.include_router(location.router, prefix="/location", tags=["Location"], dependencies=secured)
+
+# Documentation API key management (JWT required)
+app.include_router(docs_api.router, prefix="/docs", tags=["Documentation"], dependencies=secured) 
 
 # =========================================================
 # Serve Documentation Website

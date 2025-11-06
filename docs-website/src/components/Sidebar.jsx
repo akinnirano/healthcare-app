@@ -8,6 +8,11 @@ const navigationItems = [
     href: '/getting-started',
   },
   {
+    title: 'API Key Management',
+    href: '/api-key',
+    highlight: true,
+  },
+  {
     title: 'JWT Authentication',
     href: '/jwt-guide',
     expandable: true,
@@ -88,11 +93,14 @@ export default function Sidebar() {
                   to={item.href}
                   className={`flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
                     active
-                      ? 'bg-purple-600/20 text-purple-400 border-l-4 border-purple-500'
+                      ? 'bg-teal-600/20 text-teal-400 border-l-4 border-teal-500'
+                      : item.highlight
+                      ? 'text-teal-400 hover:bg-teal-700/20 hover:text-teal-300'
                       : 'text-gray-300 hover:bg-gray-700/30 hover:text-white'
                   }`}
                 >
                   <span className="text-sm font-medium">{item.title}</span>
+                  {item.highlight && <span className="text-xs px-2 py-0.5 bg-teal-500/20 text-teal-400 rounded-full">NEW</span>}
                 </Link>
               )}
               
