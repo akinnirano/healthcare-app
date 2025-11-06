@@ -11,13 +11,8 @@ export default function Dashboard() {
   const isPatient = role === 'patient'
   
   const [openGroups, setOpenGroups] = useState({ account: true, service: false, ops: false });
-  const [active, setActive] = useState("map"); // default to Map
+  const [active, setActive] = useState("home"); // default to home
   const [mobileOpen, setMobileOpen] = useState(false);
-  
-  // If patient, show dedicated patient dashboard
-  if (isPatient) {
-    return <PatientDashboard />
-  }
 
   const toggle = (key) => {
     // open only the selected group, collapse the others
@@ -147,15 +142,18 @@ function TopNav({ onSelect, onLogout, onToggleSidebar }) {
 }
 
 function SideNav({ open, onToggle, active, onSelect, onLogout, role }) {
+  const isPatient = role === 'patient'
+  
   return (
     <nav className="rounded-2xl bg-slate-900 text-slate-200 p-3 shadow-sm h-[calc(100vh-5.5rem)] overflow-y-auto">
       <button onClick={() => onSelect("home")} className={navItemCls(active === "home")}> 
-        <HomeIcon /> Home
+        <HomeIcon /> {isPatient ? 'Dashboard' : 'Home'}
       </button>
 
-      {role === 'patient' ? (
+      {isPatient ? (
         <div className="ml-3 mt-2 grid gap-1">
-          <button onClick={() => onSelect("map")} className={navSubItemCls(active === "map")}><MapIcon /> Track Patient</button>
+          <a href="/dashboard/track" className={navSubItemCls(active === "track") + " flex items-center"}><MapIcon /> Track Staff</a>
+          <a href="/dashboard/feedback" className={navSubItemCls(active === "feedback") + " flex items-center"}><ChatIcon /> Feedback</a>
         </div>
       ) : (
         <>
