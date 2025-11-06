@@ -76,8 +76,8 @@ export default function Dashboard() {
               <BarChartCard data={[{ label: 'Mon', staff: 12, patients: 20 }, { label: 'Tue', staff: 14, patients: 22 }, { label: 'Wed', staff: 10, patients: 18 }, { label: 'Thu', staff: 16, patients: 24 }, { label: 'Fri', staff: 18, patients: 26 }, { label: 'Sat', staff: 9, patients: 14 }, { label: 'Sun', staff: 8, patients: 12 }]} />
             </div>
 
-            {/* Report Table */}
-            <ReportTable />
+            {/* Report Table - Hidden */}
+            {/* <ReportTable /> */}
             {isPatient && <PatientAssignmentsReport />}
 
             {/* Manage Users body */}
