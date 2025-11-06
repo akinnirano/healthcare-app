@@ -2,12 +2,18 @@ import React, { useState, useContext, useEffect } from "react";
 import api from "../api/axios";
 import MapTracker from "../components/MapTracker";
 import ManageUsers from "./Dashboard/ManageUsers";
+import PatientDashboard from "./Dashboard/PatientDashboard";
 import { AuthContext } from "../context/AuthProvider";
 
 export default function Dashboard() {
   const { user } = useContext(AuthContext)
-  const role = (user?.role || '').toString().toLowerCase()
+  const role = (user?.role?.name || user?.role || '').toString().toLowerCase()
   const isPatient = role === 'patient'
+  
+  // If patient, show dedicated patient dashboard
+  if (isPatient) {
+    return <PatientDashboard />
+  }
   const [openGroups, setOpenGroups] = useState({ account: true, service: false, ops: false });
   const [active, setActive] = useState("map"); // default to Map
   const [mobileOpen, setMobileOpen] = useState(false);
