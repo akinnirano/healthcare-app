@@ -1,12 +1,28 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import MapTracker from "../../components/MapTracker";
 import ManageUsers from "./ManageUsers";
+import ManagePayroll from "./ManagePayroll";
 import { AuthContext } from "../../context/AuthProvider";
+import api from "../../api/axios";
 
 export default function AdminDashboard() {
   const [openGroups, setOpenGroups] = useState({ account: true, service: false, ops: false });
   const [active, setActive] = useState("map"); // default to Map
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [companyName, setCompanyName] = useState('');
+
+  const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    // Fetch company name
+    if (user?.company_id) {
+      api.get(`/companies/${user.company_id}`)
+        .then(res => setCompanyName(res.data.name))
+        .catch(() => setCompanyName('Healthcare Company'));
+    } else {
+      setCompanyName('Healthcare Dashboard');
+    }
+  }, [user]);
 
   const toggle = (key) => {
     // open only the selected group, collapse the others
@@ -37,7 +53,7 @@ export default function AdminDashboard() {
       )}
 
       <div className="relative z-10 min-h-screen">
-        <TopNav onSelect={setActive} onLogout={handleLogout} onToggleSidebar={() => setMobileOpen(true)} />
+        <TopNav companyName={companyName} onSelect={setActive} onLogout={handleLogout} onToggleSidebar={() => setMobileOpen(true)} />
         <div className="w-full px-4 sm:px-6 py-6 grid grid-cols-12 gap-6">
           <aside className="hidden md:block col-span-12 md:col-span-3 lg:col-span-2 xl:col-span-2">
             <SideNav
@@ -49,12 +65,17 @@ export default function AdminDashboard() {
             />
           </aside>
           <main className="col-span-12 md:col-span-9 lg:col-span-10 xl:col-span-10 space-y-6">
-            <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm h-[70vh] md:h-[78vh]">
-              <h2 className="text-xl font-semibold text-slate-800 mb-3">Map</h2>
-              <div className="h-[calc(100%-2.5rem)]">
-                <MapTracker />
+            {active === "payroll" ? (
+              <ManagePayroll />
+            ) : (
+              <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm h-[70vh] md:h-[78vh]">
+                <h2 className="text-xl font-semibold text-slate-800 mb-3">{titleFor(active)}</h2>
+                <div className="h-[calc(100%-2.5rem)]">
+                  {active === "map" && <MapTracker />}
+                  {active !== "map" && <div className="flex items-center justify-center h-full text-slate-500">Content for {titleFor(active)}</div>}
+                </div>
               </div>
-            </div>
+            )}
           </main>
         </div>
       </div>
@@ -62,7 +83,7 @@ export default function AdminDashboard() {
   );
 }
 
-export function TopNav({ onSelect, onLogout, onToggleSidebar }) {
+export function TopNav({ companyName, onSelect, onLogout, onToggleSidebar }) {
   const { user } = useContext(AuthContext)
   const displayName = (user?.full_name || user?.email || 'User')
   return (
@@ -72,7 +93,12 @@ export function TopNav({ onSelect, onLogout, onToggleSidebar }) {
           <button className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-lg hover:bg-slate-100" aria-label="Open menu" onClick={onToggleSidebar}>
             <MenuIcon />
           </button>
-          <div className="pl-1 md:pl-5 text-slate-800 font-extrabold tracking-tight">Healthcare Dashboard</div>
+          <div>
+            <div className="pl-1 md:pl-5 text-slate-800 font-extrabold tracking-tight">{companyName}</div>
+            {companyName && companyName !== 'Healthcare Dashboard' && (
+              <div className="pl-1 md:pl-5 text-xs text-slate-500">Healthcare Management System</div>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <button className="relative rounded-full p-2 hover:bg-slate-100" aria-label="Notifications">
