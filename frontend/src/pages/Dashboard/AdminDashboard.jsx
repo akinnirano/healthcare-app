@@ -2,6 +2,14 @@ import React, { useState, useContext, useEffect } from "react";
 import MapTracker from "../../components/MapTracker";
 import ManageUsers from "./ManageUsers";
 import ManagePayroll from "./ManagePayroll";
+import ManageRoles from "./ManageRoles";
+import ManagePriviledge from "./ManagePriviledge";
+import StaffInterface from "./StaffInterface";
+import AssignmentsPage from "./AssignmentsPage";
+import TimesheetManagement from "./TimesheetManagement";
+import ComplianceManagementPage from "./ComplianceManagementPage";
+import FeedbackManagementPage from "./FeedbackManagementPage";
+import VisitManagementPage from "./VisitManagementPage";
 import { AuthContext } from "../../context/AuthProvider";
 import api from "../../api/axios";
 
@@ -12,6 +20,12 @@ export default function AdminDashboard() {
   const [companyName, setCompanyName] = useState('');
 
   const { user } = useContext(AuthContext);
+  
+  // Determine user role for access control
+  const userRole = user?.role?.name?.toLowerCase() || '';
+  const isPatient = userRole === 'patient';
+  const isStaff = userRole === 'staff' || userRole === 'practitioner';
+  const isAdmin = userRole === 'admin' || userRole === 'hr' || userRole === 'finance';
 
   useEffect(() => {
     // Fetch company name
@@ -34,6 +48,36 @@ export default function AdminDashboard() {
     window.location.href = '/login';
   };
 
+  const renderContent = (key) => {
+    // Render full-page components (no wrapper)
+    if (key === "payroll") return <ManagePayroll />;
+    if (key === "users") return <ManageUsers />;
+    if (key === "roles") return <ManageRoles />;
+    if (key === "privileges") return <ManagePriviledge />;
+    if (key === "staff") return <StaffInterface />;
+    if (key === "assignments") return <AssignmentsPage />;
+    if (key === "timesheets") return <TimesheetManagement />;
+    if (key === "compliance") return <ComplianceManagementPage />;
+    if (key === "feedback") return <FeedbackManagementPage />;
+    if (key === "visits") return <VisitManagementPage />;
+    
+    // Render wrapped components
+    return (
+      <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm h-[70vh] md:h-[78vh]">
+        <h2 className="text-xl font-semibold text-slate-800 mb-3">{titleFor(key)}</h2>
+        <div className="h-[calc(100%-2.5rem)]">
+          {key === "map" && <MapTracker />}
+          {key === "home" && <DashboardHome />}
+          {!["map", "home", "payroll", "users", "roles", "privileges", "staff", "assignments", "timesheets", "compliance", "feedback", "visits"].includes(key) && (
+            <div className="flex items-center justify-center h-full text-slate-500">
+              Content for {titleFor(key)} coming soon
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="relative min-h-screen bg-slate-50">
       {/* Mobile drawer */}
@@ -47,6 +91,9 @@ export default function AdminDashboard() {
               active={active}
               onSelect={(v) => { setActive(v); setMobileOpen(false); }}
               onLogout={handleLogout}
+              isPatient={isPatient}
+              isStaff={isStaff}
+              isAdmin={isAdmin}
             />
           </div>
         </div>
@@ -62,20 +109,13 @@ export default function AdminDashboard() {
               active={active}
               onSelect={setActive}
               onLogout={handleLogout}
+              isPatient={isPatient}
+              isStaff={isStaff}
+              isAdmin={isAdmin}
             />
           </aside>
           <main className="col-span-12 md:col-span-9 lg:col-span-10 xl:col-span-10 space-y-6">
-            {active === "payroll" ? (
-              <ManagePayroll />
-            ) : (
-              <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm h-[70vh] md:h-[78vh]">
-                <h2 className="text-xl font-semibold text-slate-800 mb-3">{titleFor(active)}</h2>
-                <div className="h-[calc(100%-2.5rem)]">
-                  {active === "map" && <MapTracker />}
-                  {active !== "map" && <div className="flex items-center justify-center h-full text-slate-500">Content for {titleFor(active)}</div>}
-                </div>
-              </div>
-            )}
+            {renderContent(active)}
           </main>
         </div>
       </div>
@@ -137,56 +177,71 @@ export function TopNav({ companyName, onSelect, onLogout, onToggleSidebar }) {
   );
 }
 
-export function SideNav({ open, onToggle, active, onSelect, onLogout }) {
+export function SideNav({ open, onToggle, active, onSelect, onLogout, isPatient, isStaff, isAdmin }) {
   return (
     <nav className="rounded-2xl bg-slate-900 text-slate-200 p-3 shadow-sm h-[calc(100vh-5.5rem)] overflow-y-auto">
       <button onClick={() => onSelect("home")} className={navItemCls(active === "home")}> 
-        <HomeIcon /> Home
+        <HomeIcon /> Dashboard
       </button>
 
-      {/* Account Management */}
-      <SectionHeader title="Account Management" open={open.account} onToggle={() => onToggle("account")} />
-      {open.account && (
-        <div className="ml-3 grid gap-1">
-          <a href="/dashboard/users" className={navSubItemCls(active === "staff") + " flex items-center"}><UsersIcon /> Manage Users</a>
-
-          <a href="/dashboard/roles" className={navSubItemCls(active === "admin") + " flex items-center"}><BadgeIcon /> Manage Role</a>
-          <a href="/dashboard/staff" className={navSubItemCls(active === "staff") + " flex items-center"}><UsersIcon /> Manage Staff</a>
-          <a href="/dashboard/patient" className={navSubItemCls(active === "staff") + " flex items-center"}><UserHeartIcon /> Manage Patient</a>
-          <button onClick={() => onSelect("map")} className={navSubItemCls(active === "map")}>View Map Locations<MapIcon /> </button>
-          <a href="/dashboard/track" className={navSubItemCls(active === "track") + " flex items-center"}><MapIcon /> Specific Map Tracker</a>
+      {/* Patient only sees basic options */}
+      {isPatient && (
+        <div className="mt-3 p-3 bg-slate-800 rounded-lg text-sm text-slate-400">
+          <p>Welcome! View your appointments and health information.</p>
         </div>
       )}
 
-      {/* Service Request */}
-      <SectionHeader title="Service Request" open={open.service} onToggle={() => onToggle("service")} />
-      {open.service && (
-        <div className="ml-3 grid gap-1">
-          <a href="/dashboard/assignments" className={navSubItemCls(active === "admin") + " flex items-center"}><SwapIcon /> Manage Staff Assignments</a>
-          <a href="/dashboard/assignshiffs" className={navSubItemCls(active === "assignshiffs") + " flex items-center"}><ClockIcon /> All Assigned Shiffs</a>
-          <button onClick={() => onSelect("shift_reports")} className={navSubItemCls(active === "shift_reports")}><ClockIcon /> Manage Shift Reports</button>
-                   <a href="/dashboard/timesheets" className={navSubItemCls(active === "timesheets") + " flex items-center"}><DocumentIcon /> Manage Timesheet Report</a>
-          <button onClick={() => onSelect("payroll")} className={navSubItemCls(active === "payroll")}><CashIcon /> Manage Payroll</button>
-          <button onClick={() => onSelect("invoices")} className={navSubItemCls(active === "invoices")}><ReceiptIcon /> Manage Invoice</button>
-                  <a href="/dashboard/compliance" className={navSubItemCls(active === "compliance") + " flex items-center"}><CheckIcon /> Manage Compliance</a>
-                   <a href="/dashboard/feedback" className={navSubItemCls(active === "feedback") + " flex items-center"}><ChatIcon /> Management Feedback</a>
-          <a href="/dashboard/visits" className={navSubItemCls(active === "visits") + " flex items-center"}><StethoscopeIcon /> Manage Visits Report</a>
-        </div>
-      )}
+      {/* Account Management - Admin/Staff only */}
+      {!isPatient && (
+        <>
+          <SectionHeader title="Account Management" open={open.account} onToggle={() => onToggle("account")} />
+          {open.account && (
+            <div className="ml-3 grid gap-1">
+              {isAdmin && (
+                <>
+                  <button onClick={() => onSelect("users")} className={navSubItemCls(active === "users") + " flex items-center"}><UsersIcon /> Manage Users</button>
+                  <button onClick={() => onSelect("roles")} className={navSubItemCls(active === "roles") + " flex items-center"}><BadgeIcon /> Manage Roles</button>
+                  <button onClick={() => onSelect("privileges")} className={navSubItemCls(active === "privileges") + " flex items-center"}><ShieldIcon /> Manage Privileges</button>
+                </>
+              )}
+              <button onClick={() => onSelect("staff")} className={navSubItemCls(active === "staff") + " flex items-center"}><UsersIcon /> {isAdmin ? 'Manage Staff' : 'Staff Profile'}</button>
+              <a href="/dashboard/patient" className={navSubItemCls(active === "patient") + " flex items-center"}><UserHeartIcon /> Manage Patient</a>
+              <button onClick={() => onSelect("map")} className={navSubItemCls(active === "map") + " flex items-center"}><MapIcon /> View Map Locations</button>
+              <a href="/dashboard/track" className={navSubItemCls(active === "track") + " flex items-center"}><MapIcon /> Specific Map Tracker</a>
+            </div>
+          )}
 
-      {/* Operation */}
-      <SectionHeader title="Operation" open={open.ops} onToggle={() => onToggle("ops")} />
-      {open.ops && (
-        <div className="ml-3 grid gap-1">
-          <button onClick={() => onSelect("op_assign_staff")} className={navSubItemCls(active === "op_assign_staff")}><UserPlusIcon /> Assign Staff</button>
-          <a href="/dashboard/startshift" className={navSubItemCls(active === "startshift") + " flex items-center"}><PlayIcon /> Start Shift</a>
-          <a href="/dashboard/endshift" className={navSubItemCls(active === "endshift") + " flex items-center"}><StopIcon /> End Shift</a>
-          <button onClick={() => onSelect("op_submit_timesheet")} className={navSubItemCls(active === "op_submit_timesheet")}><UploadIcon /> Submit Timesheet</button>
-          <button onClick={() => onSelect("op_process_payroll")} className={navSubItemCls(active === "op_process_payroll")}><CashIcon /> Process Payroll</button>
-          <button onClick={() => onSelect("op_verify_compliance")} className={navSubItemCls(active === "op_verify_compliance")}><CheckIcon /> Verify Compliance</button>
-          <button onClick={() => onSelect("op_today_visits")} className={navSubItemCls(active === "op_today_visits")}><CalendarIcon /> Today Visits</button>
-          <button onClick={() => onSelect("op_complete_visit")} className={navSubItemCls(active === "op_complete_visit")}><CheckIcon /> Complete Visit</button>
-        </div>
+          {/* Service Request - Admin/Staff only */}
+          <SectionHeader title="Service Request" open={open.service} onToggle={() => onToggle("service")} />
+          {open.service && (
+            <div className="ml-3 grid gap-1">
+              <button onClick={() => onSelect("assignments")} className={navSubItemCls(active === "assignments") + " flex items-center"}><SwapIcon /> Manage Assignments</button>
+              <a href="/dashboard/assignshiffs" className={navSubItemCls(active === "assignshiffs") + " flex items-center"}><ClockIcon /> All Assigned Shifts</a>
+              <button onClick={() => onSelect("shift_reports")} className={navSubItemCls(active === "shift_reports") + " flex items-center"}><ClockIcon /> Manage Shift Reports</button>
+              <button onClick={() => onSelect("timesheets")} className={navSubItemCls(active === "timesheets") + " flex items-center"}><DocumentIcon /> Manage Timesheets</button>
+              <button onClick={() => onSelect("payroll")} className={navSubItemCls(active === "payroll") + " flex items-center"}><CashIcon /> Manage Payroll</button>
+              <button onClick={() => onSelect("invoices")} className={navSubItemCls(active === "invoices") + " flex items-center"}><ReceiptIcon /> Manage Invoices</button>
+              <button onClick={() => onSelect("compliance")} className={navSubItemCls(active === "compliance") + " flex items-center"}><CheckIcon /> Manage Compliance</button>
+              <button onClick={() => onSelect("feedback")} className={navSubItemCls(active === "feedback") + " flex items-center"}><ChatIcon /> Manage Feedback</button>
+              <button onClick={() => onSelect("visits")} className={navSubItemCls(active === "visits") + " flex items-center"}><StethoscopeIcon /> Manage Visits</button>
+            </div>
+          )}
+
+          {/* Operation - Admin/Staff only */}
+          <SectionHeader title="Operation" open={open.ops} onToggle={() => onToggle("ops")} />
+          {open.ops && (
+            <div className="ml-3 grid gap-1">
+              {isAdmin && <button onClick={() => onSelect("op_assign_staff")} className={navSubItemCls(active === "op_assign_staff") + " flex items-center"}><UserPlusIcon /> Assign Staff</button>}
+              <a href="/dashboard/startshift" className={navSubItemCls(active === "startshift") + " flex items-center"}><PlayIcon /> Start Shift</a>
+              <a href="/dashboard/endshift" className={navSubItemCls(active === "endshift") + " flex items-center"}><StopIcon /> End Shift</a>
+              <button onClick={() => onSelect("op_submit_timesheet")} className={navSubItemCls(active === "op_submit_timesheet") + " flex items-center"}><UploadIcon /> Submit Timesheet</button>
+              {isAdmin && <button onClick={() => onSelect("op_process_payroll")} className={navSubItemCls(active === "op_process_payroll") + " flex items-center"}><CashIcon /> Process Payroll</button>}
+              <button onClick={() => onSelect("op_verify_compliance")} className={navSubItemCls(active === "op_verify_compliance") + " flex items-center"}><CheckIcon /> Verify Compliance</button>
+              <button onClick={() => onSelect("op_today_visits")} className={navSubItemCls(active === "op_today_visits") + " flex items-center"}><CalendarIcon /> Today Visits</button>
+              <button onClick={() => onSelect("op_complete_visit")} className={navSubItemCls(active === "op_complete_visit") + " flex items-center"}><CheckIcon /> Complete Visit</button>
+            </div>
+          )}
+        </>
       )}
 
       <div className="mt-4 border-top border-slate-700/40 pt-3">
@@ -212,6 +267,49 @@ function navItemCls(active){
 }
 function navSubItemCls(active){
   return `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm ${active ? 'bg-slate-800 text-white' : 'text-slate-200 hover:bg-slate-800'}`
+}
+
+// Simple Dashboard Home Component
+function DashboardHome() {
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+          <div className="text-3xl font-bold mb-2">Welcome</div>
+          <div className="text-sm opacity-90">Healthcare Management Dashboard</div>
+        </div>
+        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white">
+          <div className="text-2xl font-bold mb-2">Quick Access</div>
+          <div className="text-sm opacity-90">Navigate using the side menu</div>
+        </div>
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white">
+          <div className="text-2xl font-bold mb-2">Support</div>
+          <div className="text-sm opacity-90">Contact support for assistance</div>
+        </div>
+      </div>
+      <div className="bg-white rounded-xl p-6 border border-slate-200">
+        <h3 className="text-lg font-semibold text-slate-800 mb-3">Getting Started</h3>
+        <ul className="space-y-2 text-slate-600">
+          <li className="flex items-start gap-2">
+            <span className="text-green-600">✓</span>
+            <span>Use the side menu to navigate to different sections</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-green-600">✓</span>
+            <span>View and manage users, roles, and staff</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-green-600">✓</span>
+            <span>Process payroll and manage assignments</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-green-600">✓</span>
+            <span>Track staff locations on the map</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  )
 }
 
 function titleFor(key){
