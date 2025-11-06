@@ -192,7 +192,7 @@ def register_docs_user(user_data: DocsUserRegister, db: Session = Depends(get_db
         "message": "Registration successful! Check your email for welcome message."
     }
 
-@router.get("/api-key", response_model=ApiKeyResponse, summary="Get or create API key for current user")
+@router.get("/api-key", response_model=ApiKeyResponse, summary="Get or create API key for current user", dependencies=[Depends(get_current_user)])
 def get_api_key(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -234,7 +234,7 @@ def get_api_key(
         "last_used": None
     }
 
-@router.post("/api-key/regenerate", response_model=ApiKeyResponse, summary="Regenerate API key")
+@router.post("/api-key/regenerate", response_model=ApiKeyResponse, summary="Regenerate API key", dependencies=[Depends(get_current_user)])
 def regenerate_api_key(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -266,7 +266,7 @@ def regenerate_api_key(
         "last_used": None
     }
 
-@router.delete("/api-key", summary="Revoke API key")
+@router.delete("/api-key", summary="Revoke API key", dependencies=[Depends(get_current_user)])
 def revoke_api_key(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)

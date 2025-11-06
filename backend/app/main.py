@@ -90,8 +90,8 @@ app.include_router(feedback.router, prefix="/feedback", tags=["Feedback"], depen
 app.include_router(mapdata.router, prefix="/map", tags=["MapData"], dependencies=secured)
 app.include_router(location.router, prefix="/location", tags=["Location"], dependencies=secured)
 
-# Documentation API key management (JWT required)
-app.include_router(docs_api.router, prefix="/docs", tags=["Documentation"], dependencies=secured)
+# Documentation API - Registration is public, API key management requires JWT
+app.include_router(docs_api.router, prefix="/docs", tags=["Documentation"])
 
 # Company management (multi-tenancy)
 app.include_router(companies.router, prefix="/companies", tags=["Companies"])  # Login is public, others protected
