@@ -3,7 +3,7 @@ API Key management for documentation access
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from typing import Optional
 import secrets
 import hashlib
@@ -22,7 +22,7 @@ class ApiKeyResponse(BaseModel):
 
 class DocsUserRegister(BaseModel):
     full_name: str
-    email: EmailStr
+    email: str
     phone: str
     password: str
     company_name: str
