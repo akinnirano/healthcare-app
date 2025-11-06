@@ -36,7 +36,7 @@ export function DocsAuthProvider({ children }) {
   const login = async (email, password) => {
     try {
       // Call the main backend login endpoint
-      const response = await axios.post('/api/auth/login', {
+      const response = await axios.post('/auth/login', {
         email,
         password
       })
@@ -79,7 +79,7 @@ export function DocsAuthProvider({ children }) {
     if (!authToken) return
 
     try {
-      const response = await axios.get('/api/docs/api-key', {
+      const response = await axios.get('/docs/api-key', {
         headers: {
           Authorization: `Bearer ${authToken}`
         }
@@ -98,7 +98,7 @@ export function DocsAuthProvider({ children }) {
     if (!token) throw new Error('Not authenticated')
 
     try {
-      const response = await axios.post('/api/docs/api-key/regenerate', {}, {
+      const response = await axios.post('/docs/api-key/regenerate', {}, {
         headers: {
           Authorization: `Bearer ${token}`
         }
