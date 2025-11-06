@@ -46,7 +46,7 @@ export default function App(){
       <Route path="/dashboard/feedback" element={<ProtectedRoute disallowRoles={["patient"]}><FeedbackManagementPage /></ProtectedRoute>} />
       <Route path="/dashboard/timesheets" element={<ProtectedRoute disallowRoles={["patient"]}><TimesheetManagement /></ProtectedRoute>} />
       <Route path="/dashboard/compliance" element={<ProtectedRoute disallowRoles={["patient"]}><ComplianceManagementPage /></ProtectedRoute>} />
-      <Route path="/dashboard/track" element={<ProtectedRoute disallowRoles={["patient"]}><SpecificMapTracker /></ProtectedRoute>} />
+      <Route path="/dashboard/track" element={<ProtectedRoute><SpecificMapTracker /></ProtectedRoute>} />
       <Route path="/dashboard/assignshiffs" element={<ProtectedRoute disallowRoles={["patient"]}><AssignShiffs /></ProtectedRoute>} />
       <Route path="/dashboard/startshift" element={<ProtectedRoute disallowRoles={["patient"]}><Startshift /></ProtectedRoute>} />
       <Route path="/dashboard/endshift" element={<ProtectedRoute disallowRoles={["patient"]}><EndShift /></ProtectedRoute>} />
