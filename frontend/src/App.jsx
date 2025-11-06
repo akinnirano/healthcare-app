@@ -35,7 +35,7 @@ export default function App(){
       <Route path="/register" element={<PatientRegister />} />
       <Route path="/patient/register" element={<PatientRegister />} />
       <Route path="/practitioner/register" element={<PractitionerRegister />} />
-      <Route path="/dashboard" element={<ProtectedRoute roles={["patient"]}><Dashboard /></ProtectedRoute>} />
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/dashboard/admin" element={<ProtectedRoute disallowRoles={["patient"]}><AdminDashboard /></ProtectedRoute>} />
       <Route path="/dashboard/users" element={<ProtectedRoute disallowRoles={["patient"]}><UserManagementPage /></ProtectedRoute>} />
       <Route path="/dashboard/user" element={<ProtectedRoute disallowRoles={["patient"]}><UserManagementPage /></ProtectedRoute>} />
@@ -43,7 +43,7 @@ export default function App(){
       <Route path="/dashboard/privileges" element={<ProtectedRoute disallowRoles={["patient"]}><PrivilegeManagementPage /></ProtectedRoute>} />
       <Route path="/dashboard/visits" element={<ProtectedRoute disallowRoles={["patient"]}><VisitManagementPage /></ProtectedRoute>} />
       <Route path="/dashboard/assignments" element={<ProtectedRoute disallowRoles={["patient"]}><AssignmentsPage /></ProtectedRoute>} />
-      <Route path="/dashboard/feedback" element={<ProtectedRoute disallowRoles={["patient"]}><FeedbackManagementPage /></ProtectedRoute>} />
+      <Route path="/dashboard/feedback" element={<ProtectedRoute><FeedbackManagementPage /></ProtectedRoute>} />
       <Route path="/dashboard/timesheets" element={<ProtectedRoute disallowRoles={["patient"]}><TimesheetManagement /></ProtectedRoute>} />
       <Route path="/dashboard/compliance" element={<ProtectedRoute disallowRoles={["patient"]}><ComplianceManagementPage /></ProtectedRoute>} />
       <Route path="/dashboard/track" element={<ProtectedRoute><SpecificMapTracker /></ProtectedRoute>} />

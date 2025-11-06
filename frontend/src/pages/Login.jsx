@@ -21,7 +21,7 @@ export default function Login(){
       const data = await login(id, pwd)
       const role = data?.role || (data?.access_token && JSON.parse(atob(data.access_token.split('.')[1])).role)
       const r = (role || '').toString().toLowerCase()
-      if (r === 'patient') nav('/dashboard/track')
+      if (r === 'patient') nav('/dashboard')
       else nav('/dashboard')
     } catch (err) {
       const detail = err?.response?.data?.detail || 'Invalid credentials'
