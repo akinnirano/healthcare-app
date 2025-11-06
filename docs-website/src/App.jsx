@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar'
 import OnThisPage from './components/OnThisPage'
 import DocPage from './pages/DocPage'
 import DocsLogin from './pages/DocsLogin'
+import DocsRegister from './pages/DocsRegister'
 import ApiKeyManagement from './pages/ApiKeyManagement'
 import ProtectedRoute from './components/ProtectedRoute'
 import { useDocsAuth } from './context/DocsAuthContext'
@@ -15,8 +16,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-dark-bg">
       <Routes>
-        {/* Public login route */}
+        {/* Public routes */}
         <Route path="/login" element={isAuthenticated ? <Navigate to="/getting-started" replace /> : <DocsLogin />} />
+        <Route path="/register" element={isAuthenticated ? <Navigate to="/getting-started" replace /> : <DocsRegister />} />
         
         {/* Protected documentation routes */}
         <Route path="/*" element={

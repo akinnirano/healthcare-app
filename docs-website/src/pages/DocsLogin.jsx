@@ -113,6 +113,12 @@ export default function DocsLogin() {
             <p className="text-center text-sm text-gray-400">
               Use your Healthcare application credentials
             </p>
+            <p className="text-center text-sm text-gray-400 mt-3">
+              Don't have an account?{' '}
+              <a href="/register" className="text-teal-400 hover:text-teal-300 font-medium transition">
+                Register here
+              </a>
+            </p>
           </div>
         </div>
 

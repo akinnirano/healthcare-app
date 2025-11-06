@@ -3,7 +3,7 @@ API Key management for documentation access
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 import secrets
 import hashlib
@@ -11,7 +11,7 @@ from datetime import datetime
 
 from ..db import models
 from ..db.database import get_db
-from .security import get_current_user
+from .security import get_current_user, get_password_hash
 
 router = APIRouter()
 
@@ -19,6 +19,94 @@ class ApiKeyResponse(BaseModel):
     api_key: str
     created_at: Optional[str] = None
     last_used: Optional[str] = None
+
+class DocsUserRegister(BaseModel):
+    full_name: str
+    email: EmailStr
+    phone: str
+    password: str
+    company_name: str
+    country_id: int = 1  # Default to US
+
+class DocsUserResponse(BaseModel):
+    id: int
+    full_name: str
+    email: str
+    message: str
+
+@router.post("/register", response_model=DocsUserResponse, status_code=status.HTTP_201_CREATED, summary="Register a new docs user")
+def register_docs_user(user_data: DocsUserRegister, db: Session = Depends(get_db)):
+    """
+    Register a new user with 'docs' role for documentation access
+    Creates user, company (if new), and assigns 'docs' role
+    """
+    # Check if email already exists
+    existing_user = db.query(models.User).filter(models.User.email == user_data.email.lower()).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+    
+    # Check if phone already exists
+    if user_data.phone:
+        existing_phone = db.query(models.User).filter(models.User.phone == user_data.phone).first()
+        if existing_phone:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Phone number already registered"
+            )
+    
+    # Get or create 'docs' role
+    docs_role = db.query(models.Role).filter(models.Role.name.ilike('docs')).first()
+    if not docs_role:
+        # Create docs role if it doesn't exist
+        docs_role = models.Role(
+            name="Docs",
+            description="Documentation access user with limited privileges"
+        )
+        db.add(docs_role)
+        db.flush()
+    
+    # Check if company exists, otherwise create it
+    company = db.query(models.Company).filter(
+        models.Company.name.ilike(user_data.company_name)
+    ).first()
+    
+    if not company:
+        # Create new company
+        company = models.Company(
+            name=user_data.company_name,
+            email=user_data.email.lower(),  # Use registrant's email
+            password_hash=get_password_hash(user_data.password),  # Same password for company login
+            country_id=user_data.country_id,
+            is_active=True
+        )
+        db.add(company)
+        db.flush()
+    
+    # Create user
+    new_user = models.User(
+        full_name=user_data.full_name,
+        email=user_data.email.lower(),
+        phone=user_data.phone,
+        password_hash=get_password_hash(user_data.password),
+        role_id=docs_role.id,
+        company_id=company.id,
+        country_id=user_data.country_id,
+        is_active=True
+    )
+    
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    
+    return {
+        "id": new_user.id,
+        "full_name": new_user.full_name,
+        "email": new_user.email,
+        "message": "Registration successful! You can now login."
+    }
 
 @router.get("/api-key", response_model=ApiKeyResponse, summary="Get or create API key for current user")
 def get_api_key(
