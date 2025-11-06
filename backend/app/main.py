@@ -23,7 +23,11 @@ from app.routers import (
     auth,
     mapdata,
     location,
-    docs_api
+    docs_api,
+    companies,
+    countries,
+    payroll_enhanced,
+    staff_salary_config
 )
 from app.db.database import SessionLocal
 from app.db import models
@@ -87,7 +91,17 @@ app.include_router(mapdata.router, prefix="/map", tags=["MapData"], dependencies
 app.include_router(location.router, prefix="/location", tags=["Location"], dependencies=secured)
 
 # Documentation API key management (JWT required)
-app.include_router(docs_api.router, prefix="/docs", tags=["Documentation"], dependencies=secured) 
+app.include_router(docs_api.router, prefix="/docs", tags=["Documentation"], dependencies=secured)
+
+# Company management (multi-tenancy)
+app.include_router(companies.router, prefix="/companies", tags=["Companies"])  # Login is public, others protected
+app.include_router(countries.router, prefix="/countries", tags=["Countries"])  # Public for registration
+
+# Enhanced payroll with tax calculations
+app.include_router(payroll_enhanced.router, prefix="/payroll-enhanced", tags=["Payroll Enhanced"], dependencies=secured)
+
+# Staff salary configuration
+app.include_router(staff_salary_config.router, prefix="/staff-salary-config", tags=["Staff Salary Config"], dependencies=secured)
 
 # =========================================================
 # Serve Documentation Website
