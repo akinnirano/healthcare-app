@@ -1,17 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { AuthContext } from '../../context/AuthProvider'
 import api from '../../api/axios'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
-import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
-
-// Fix leaflet default marker icons
-delete L.Icon.Default.prototype._getIconUrl
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-})
+import MapTracker from '../../components/MapTracker'
 
 export default function PatientDashboard() {
   const { user } = useContext(AuthContext)
@@ -412,36 +402,7 @@ function StaffMapView({ visits, selectedVisit }) {
               </div>
             </div>
           ) : (
-            <MapContainer 
-              center={center} 
-              zoom={13} 
-              style={{ height: '100%', width: '100%' }}
-            >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              />
-              
-              {staffLocations.map((staff) => (
-                <Marker 
-                  key={staff.staff_id} 
-                  position={[staff.latitude, staff.longitude]}
-                >
-                  <Popup>
-                    <div className="p-2">
-                      <div className="font-semibold text-teal-700">{staff.name}</div>
-                      <div className="text-xs text-slate-600 mt-1">Staff ID: {staff.staff_id}</div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        Last updated: {formatDateTime(staff.last_update)}
-                      </div>
-                      <div className="text-xs text-slate-400 mt-2">
-                        📍 {staff.latitude.toFixed(6)}, {staff.longitude.toFixed(6)}
-                      </div>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
+            <MapTracker />
           )}
         </div>
       </div>
