@@ -10,13 +10,14 @@ export default function Dashboard() {
   const role = (user?.role?.name || user?.role || '').toString().toLowerCase()
   const isPatient = role === 'patient'
   
+  const [openGroups, setOpenGroups] = useState({ account: true, service: false, ops: false });
+  const [active, setActive] = useState("map"); // default to Map
+  const [mobileOpen, setMobileOpen] = useState(false);
+  
   // If patient, show dedicated patient dashboard
   if (isPatient) {
     return <PatientDashboard />
   }
-  const [openGroups, setOpenGroups] = useState({ account: true, service: false, ops: false });
-  const [active, setActive] = useState("map"); // default to Map
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   const toggle = (key) => {
     // open only the selected group, collapse the others
