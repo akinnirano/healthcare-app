@@ -157,7 +157,7 @@ export function TopNav({ companyName, onSelect, onLogout, onToggleSidebar }) {
               <a href="/dashboard/assignshiffs" className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50">
                 <ClockIcon /> Assigned Shiffs
               </a>
-              <a href="/dashboard/startshift" className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50">
+              <a href="/dashboard/startshift/" className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50">
                 <PlayIcon /> Start Shift
               </a>
               <a href="/dashboard/endshift" className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50">
@@ -232,7 +232,7 @@ export function SideNav({ open, onToggle, active, onSelect, onLogout, isPatient,
           {open.ops && (
             <div className="ml-3 grid gap-1">
               {isAdmin && <button onClick={() => onSelect("op_assign_staff")} className={navSubItemCls(active === "op_assign_staff") + " flex items-center"}><UserPlusIcon /> Assign Staff</button>}
-              <a href="/dashboard/startshift" className={navSubItemCls(active === "startshift") + " flex items-center"}><PlayIcon /> Start Shift</a>
+              <a href="/dashboard/startshift/" className={navSubItemCls(active === "startshift") + " flex items-center"}><PlayIcon /> Start Shift</a>
               <a href="/dashboard/endshift" className={navSubItemCls(active === "endshift") + " flex items-center"}><StopIcon /> End Shift</a>
               <button onClick={() => onSelect("op_submit_timesheet")} className={navSubItemCls(active === "op_submit_timesheet") + " flex items-center"}><UploadIcon /> Submit Timesheet</button>
               {isAdmin && <button onClick={() => onSelect("op_process_payroll")} className={navSubItemCls(active === "op_process_payroll") + " flex items-center"}><CashIcon /> Process Payroll</button>}

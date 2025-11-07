@@ -173,7 +173,7 @@ function SideNav({ open, onToggle, active, onSelect, onLogout, role }) {
           
           <SectionHeader title="Operations" open={open.ops || true} onToggle={() => onToggle("ops")} />
           <div className="ml-3 grid gap-1">
-            <a href="/dashboard/startshift" className={navSubItemCls(active === "startshift") + " flex items-center"}><PlayIcon /> Start Shift</a>
+            <a href="/dashboard/startshift/" className={navSubItemCls(active === "startshift") + " flex items-center"}><PlayIcon /> Start Shift</a>
             <a href="/dashboard/endshift" className={navSubItemCls(active === "endshift") + " flex items-center"}><StopIcon /> End Shift</a>
             <a href="/dashboard/timesheets" className={navSubItemCls(active === "timesheets") + " flex items-center"}><DocumentIcon /> My Timesheets</a>
           </div>
