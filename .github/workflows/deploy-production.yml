@@ -67,6 +67,58 @@ jobs:
           echo "=========================================="
           echo ""
           
+          # Determine if sudo is needed for docker commands
+          DOCKER_CMD="docker"
+          DOCKER_COMPOSE_CMD="docker-compose"
+          
+          # Check if docker works without sudo
+          if docker ps > /dev/null 2>&1; then
+            echo "✅ Docker can be run without sudo (user is in docker group)"
+          else
+            echo "⚠️  Docker requires sudo, checking if passwordless sudo is configured..."
+            
+            # Test passwordless sudo (the -n flag means non-interactive, will fail if password needed)
+            if sudo -n true 2>/dev/null && sudo -n docker ps > /dev/null 2>&1; then
+              echo "✅ Passwordless sudo is configured for docker"
+              DOCKER_CMD="sudo docker"
+              DOCKER_COMPOSE_CMD="sudo docker-compose"
+            else
+              echo ""
+              echo "❌ ERROR: Docker commands require sudo but passwordless sudo is NOT configured"
+              echo ""
+              echo "═══════════════════════════════════════════════════════════════"
+              echo "  ACTION REQUIRED: Configure Docker Permissions on VPS Server"
+              echo "═══════════════════════════════════════════════════════════════"
+              echo ""
+              echo "SSH into your VPS server (78.138.17.185) and run ONE of these:"
+              echo ""
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "  OPTION 1 (Recommended): Add user to docker group"
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "  ssh your_username@78.138.17.185"
+              echo "  sudo usermod -aG docker \$USER"
+              echo "  newgrp docker"
+              echo "  docker ps  # Test it works"
+              echo ""
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "  OPTION 2: Configure passwordless sudo for docker"
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "  ssh your_username@78.138.17.185"
+              echo "  sudo visudo"
+              echo "  # Add this line at the end (replace YOUR_USERNAME):"
+              echo "  YOUR_USERNAME ALL=(ALL) NOPASSWD: /usr/bin/docker, /usr/local/bin/docker-compose, /usr/bin/docker-compose"
+              echo "  # Save: Ctrl+X, Y, Enter"
+              echo "  sudo -n docker ps  # Test it works"
+              echo ""
+              echo "═══════════════════════════════════════════════════════════════"
+              echo "  After configuring, re-run this deployment workflow"
+              echo "═══════════════════════════════════════════════════════════════"
+              echo ""
+              exit 1
+            fi
+          fi
+          echo ""
+          
           # Step 1: Navigate to project directory
           echo "📂 Step 1: Navigating to project directory..."
           cd ${DEPLOY_PATH:-~/healthcare-app}
@@ -83,26 +135,26 @@ jobs:
           
           # Step 3: Stop existing containers (graceful)
           echo "🛑 Step 3: Stopping existing containers..."
-          sudo docker-compose down || true
+          ${DOCKER_COMPOSE_CMD} down || true
           echo "✅ Containers stopped"
           echo ""
           
           # Step 4: Build containers
           echo "🏗️  Step 4: Building containers..."
-          sudo docker-compose build --no-cache
+          ${DOCKER_COMPOSE_CMD} build --no-cache
           echo "✅ Containers built"
           echo ""
           
           # Step 5: Start services
           echo "🚀 Step 5: Starting services..."
-          sudo docker-compose up -d
+          ${DOCKER_COMPOSE_CMD} up -d
           echo "✅ Services started"
           echo ""
           
           # Step 6: Wait for database to be ready
           echo "⏳ Step 6: Waiting for database to be ready..."
           for i in {1..30}; do
-            if sudo docker exec healthcare_db pg_isready -U postgres > /dev/null 2>&1; then
+            if ${DOCKER_CMD} exec healthcare_db pg_isready -U postgres > /dev/null 2>&1; then
               echo "✅ Database is ready"
               break
             fi
@@ -114,11 +166,11 @@ jobs:
           # Step 7: Run database migrations
           echo "🗄️  Step 7: Running database migrations..."
           if [ -f "backend/migrations/001_multi_tenancy.sql" ]; then
-            sudo docker exec -i healthcare_db psql -U postgres -d healthcare < backend/migrations/001_multi_tenancy.sql 2>/dev/null || echo "⚠️  Migration 001 already applied or skipped"
+            ${DOCKER_CMD} exec -i healthcare_db psql -U postgres -d healthcare < backend/migrations/001_multi_tenancy.sql 2>/dev/null || echo "⚠️  Migration 001 already applied or skipped"
           fi
           
           if [ -f "backend/migrations/002_add_discord_webhook.sql" ]; then
-            sudo docker exec -i healthcare_db psql -U postgres -d healthcare < backend/migrations/002_add_discord_webhook.sql 2>/dev/null || echo "⚠️  Migration 002 already applied or skipped"
+            ${DOCKER_CMD} exec -i healthcare_db psql -U postgres -d healthcare < backend/migrations/002_add_discord_webhook.sql 2>/dev/null || echo "⚠️  Migration 002 already applied or skipped"
           fi
           echo "✅ Migrations completed"
           echo ""
@@ -130,12 +182,12 @@ jobs:
           
           # Step 9: Check service status
           echo "📊 Step 9: Checking service status..."
-          sudo docker-compose ps
+          ${DOCKER_COMPOSE_CMD} ps
           echo ""
           
           # Step 10: Check backend logs
           echo "📋 Step 10: Backend logs (last 20 lines)..."
-          sudo docker-compose logs --tail=20 backend
+          ${DOCKER_COMPOSE_CMD} logs --tail=20 backend
           echo ""
           
           # Step 11: Test endpoints
