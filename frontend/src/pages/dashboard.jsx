@@ -2,7 +2,6 @@ import React, { useState, useContext, useEffect } from "react";
 import api from "../api/axios";
 import MapTracker from "../components/MapTracker";
 import ManageUsers from "./Dashboard/ManageUsers";
-import PatientDashboard from "./Dashboard/PatientDashboard";
 import { AuthContext } from "../context/AuthProvider";
 
 export default function Dashboard() {
@@ -175,7 +174,6 @@ function SideNav({ open, onToggle, active, onSelect, onLogout, role }) {
           <div className="ml-3 grid gap-1">
             <a href="/dashboard/startshift/" className={navSubItemCls(active === "startshift") + " flex items-center"}><PlayIcon /> Start Shift</a>
             <a href="/dashboard/endshift" className={navSubItemCls(active === "endshift") + " flex items-center"}><StopIcon /> End Shift</a>
-            <a href="/dashboard/timesheets" className={navSubItemCls(active === "timesheets") + " flex items-center"}><DocumentIcon /> My Timesheets</a>
           </div>
         </>
       ) : (
@@ -199,7 +197,8 @@ function SideNav({ open, onToggle, active, onSelect, onLogout, role }) {
             <div className="ml-3 grid gap-1">
               <button onClick={() => onSelect("assignments")} className={navSubItemCls(active === "assignments")}><SwapIcon /> Manage Staff Assignments</button>
               <button onClick={() => onSelect("shift_reports")} className={navSubItemCls(active === "shift_reports")}><ClockIcon /> Manage Shift Reports</button>
-              <button onClick={() => onSelect("timesheets")} className={navSubItemCls(active === "timesheets")}><DocumentIcon /> Manage Timesheet Report</button>
+              <a href="/dashboard/timesheets" className=navSubItemCls(active === "timesheets") + " flex items-center"}><DocumentIcon /> Manage Timesheet Report</a>
+              <a href="/dashboard/shift-verification" className=navSubItemCls(active === "shift_verification") + " flex items-center"}><CheckIcon /> Shift Verification</a>
               <button onClick={() => onSelect("payroll")} className={navSubItemCls(active === "payroll")}><CashIcon /> Manage Payroll</button>
               <button onClick={() => onSelect("invoices")} className={navSubItemCls(active === "invoices")}><ReceiptIcon /> Manage Invoice</button>
               <button onClick={() => onSelect("compliance")} className={navSubItemCls(active === "compliance")}><CheckIcon /> Manage Compliance</button>
@@ -255,7 +254,7 @@ function titleFor(key){
   const map = {
     home: 'Home',
     privileges: 'Manage Privilege', roles: 'Manage Role', staff: 'Manage Staff', patients: 'Manage Patient', map: 'Map Locations',
-    assignments: 'Manage Staff Assignments', shift_reports: 'Manage Shift Reports', timesheets: 'Manage Timesheet Report', payroll: 'Manage Payroll', invoices: 'Manage Invoice', compliance: 'Manage Compliance', feedback: 'Management Feedback', visits: 'Manage Visits Report',
+    assignments: 'Manage Staff Assignments', shift_reports: 'Manage Shift Reports', timesheets: 'Manage Timesheet Report', shift_verification: 'Shift Verification', payroll: 'Manage Payroll', invoices: 'Manage Invoice', compliance: 'Manage Compliance', feedback: 'Management Feedback', visits: 'Manage Visits Report',
     op_assign_staff: 'Operation: Assign Staff', op_start_shift: 'Operation: Start Shift', op_end_shift: 'Operation: End Shift', op_submit_timesheet: 'Operation: Submit Timesheet', op_process_payroll: 'Operation: Process Payroll', op_verify_compliance: 'Operation: Verify Compliance', op_today_visits: 'Operation: Today Visits', op_complete_visit: 'Operation: Complete Visit',
     profile: 'Profile Update', track: 'Track Health Practitioner'
   }

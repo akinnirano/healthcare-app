@@ -27,7 +27,8 @@ from app.routers import (
     companies,
     countries,
     payroll_enhanced,
-    staff_salary_config
+    staff_salary_config,
+    static_content
 )
 from app.db.database import SessionLocal
 from app.db import models
@@ -102,6 +103,9 @@ app.include_router(payroll_enhanced.router, prefix="/payroll-enhanced", tags=["P
 
 # Staff salary configuration
 app.include_router(staff_salary_config.router, prefix="/staff-salary-config", tags=["Staff Salary Config"], dependencies=secured)
+
+# Static content (public pages)
+app.include_router(static_content.router, prefix="", tags=["Static Content"])  # No prefix, public access
 
 # =========================================================
 # Serve Documentation Website

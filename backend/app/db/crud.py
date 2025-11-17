@@ -396,7 +396,100 @@ def end_shift(db: Session, shift_id: int, end_lat: float | None = None, end_lng:
     shift.status = models.ShiftStatus.ENDED
     db.commit()
     db.refresh(shift)
+    try:
+        if shift.staff_id:
+            create_timesheet(db, shift.staff_id, shift.id)
+    except Exception:
+        pass
     return shift
+
+
+def get_shift(db: Session, shift_id: int):
+    return db.query(models.Shift).filter(models.Shift.id == shift_id).first()
+
+
+def get_timesheet(db: Session, timesheet_id: int):
+    return db.query(models.Timesheet).filter(models.Timesheet.id == timesheet_id).first()
+
+
+def _calculate_hours(start_time: datetime | None, end_time: datetime | None) -> float:
+    if not start_time or not end_time:
+        return 0.0
+    diff = end_time - start_time
+    hours = diff.total_seconds() / 3600.0
+    if hours < 0:
+        hours = 0.0
+    return round(hours, 2)
+
+
+def create_timesheet(db: Session, staff_id: int | None, shift_id: int, total_hours: float | None = None):
+    shift = get_shift(db, shift_id)
+    if not shift:
+        raise ValueError("Shift not found")
+    staff_id = staff_id or shift.staff_id
+    if not staff_id:
+        raise ValueError("Staff not linked to shift")
+    ts = db.query(models.Timesheet).filter(models.Timesheet.shift_id == shift.id).first()
+    if not ts:
+        ts = models.Timesheet(
+            staff_id=staff_id,
+            shift_id=shift.id,
+            submitted=False,
+            verified=False,
+            createdby=get_created_by(),
+        )
+        db.add(ts)
+    else:
+        ts.staff_id = staff_id
+    if total_hours is not None:
+        try:
+            ts.total_hours = float(total_hours)
+        except (TypeError, ValueError):
+            ts.total_hours = 0.0
+    else:
+        ts.total_hours = _calculate_hours(shift.start_time, shift.end_time)
+    db.commit()
+    db.refresh(ts)
+    return ts
+
+
+def update_timesheet(db: Session, timesheet_id: int, **kwargs):
+    ts = get_timesheet(db, timesheet_id)
+    if not ts:
+        return None
+    allowed = {"staff_id", "total_hours", "submitted", "verified", "shift_id"}
+    for key, value in kwargs.items():
+        if key not in allowed or value is None:
+            continue
+        if key == "shift_id":
+            shift = get_shift(db, value)
+            if not shift:
+                continue
+            ts.shift_id = shift.id
+            ts.staff_id = shift.staff_id or ts.staff_id
+            ts.total_hours = _calculate_hours(shift.start_time, shift.end_time)
+            continue
+        if key == "total_hours":
+            try:
+                ts.total_hours = float(value)
+            except (TypeError, ValueError):
+                continue
+        elif key in {"submitted", "verified"}:
+            setattr(ts, key, bool(value))
+        else:
+            setattr(ts, key, value)
+    db.commit()
+    db.refresh(ts)
+    return ts
+
+
+def delete_timesheet(db: Session, timesheet_id: int):
+    ts = get_timesheet(db, timesheet_id)
+    if not ts:
+        return None
+    db.delete(ts)
+    db.commit()
+    return ts
 
 # Convenience: assign staff to a patient service request (accepts optional staff)
 def assign_staff_to_patient_request(

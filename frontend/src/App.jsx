@@ -14,7 +14,7 @@ import PrivilegeManagementPage from './pages/Dashboard/PrivilegeManagementPage'
 import VisitManagementPage from './pages/Dashboard/VisitManagementPage'
 import AssignmentsPage from './pages/Dashboard/AssignmentsPage'
 import FeedbackManagementPage from './pages/Dashboard/FeedbackManagementPage'
-import TimesheetManagement from './pages/Dashboard/TimesheetManagement'
+import ManageTimesheetPage from './pages/Dashboard/ManageTimesheetPage'
 import ComplianceManagementPage from './pages/Dashboard/ComplianceManagementPage'
 import Dashboard from './pages/dashboard'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -44,7 +44,7 @@ export default function App(){
       <Route path="/dashboard/visits" element={<ProtectedRoute disallowRoles={["patient"]}><VisitManagementPage /></ProtectedRoute>} />
       <Route path="/dashboard/assignments" element={<ProtectedRoute disallowRoles={["patient"]}><AssignmentsPage /></ProtectedRoute>} />
       <Route path="/dashboard/feedback" element={<ProtectedRoute><FeedbackManagementPage /></ProtectedRoute>} />
-      <Route path="/dashboard/timesheets" element={<ProtectedRoute disallowRoles={["patient"]}><TimesheetManagement /></ProtectedRoute>} />
+      <Route path="/dashboard/timesheets" element={<ProtectedRoute disallowRoles={["patient"]}><ManageTimesheetPage /></ProtectedRoute>} />
       <Route path="/dashboard/compliance" element={<ProtectedRoute disallowRoles={["patient"]}><ComplianceManagementPage /></ProtectedRoute>} />
       <Route path="/dashboard/track" element={<ProtectedRoute><SpecificMapTracker /></ProtectedRoute>} />
       <Route path="/dashboard/assignshiffs" element={<ProtectedRoute disallowRoles={["patient"]}><AssignShiffs /></ProtectedRoute>} />

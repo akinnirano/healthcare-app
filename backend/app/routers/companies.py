@@ -26,6 +26,7 @@ class CompanyCreate(BaseModel):
     phone: Optional[str] = None
     registration_number: Optional[str] = None
     tax_id: Optional[str] = None
+    discord_webhook_url: Optional[str] = None
 
 class CompanyUpdate(BaseModel):
     name: Optional[str] = None
@@ -35,6 +36,7 @@ class CompanyUpdate(BaseModel):
     phone: Optional[str] = None
     registration_number: Optional[str] = None
     tax_id: Optional[str] = None
+    discord_webhook_url: Optional[str] = None
     is_active: Optional[bool] = None
 
 class CompanyResponse(BaseModel):
@@ -46,6 +48,7 @@ class CompanyResponse(BaseModel):
     phone: Optional[str]
     registration_number: Optional[str]
     tax_id: Optional[str]
+    discord_webhook_url: Optional[str]
     is_active: bool
     datecreated: datetime
 
@@ -232,6 +235,7 @@ def create_company(company: CompanyCreate, db: Session = Depends(get_db)):
         phone=company.phone,
         registration_number=company.registration_number,
         tax_id=company.tax_id,
+        discord_webhook_url=company.discord_webhook_url,
         is_active=True
     )
     
@@ -333,4 +337,71 @@ def delete_company(
     db.commit()
     
     return None
+
+# =========================================================
+# DISCORD WEBHOOK MANAGEMENT
+# =========================================================
+class DiscordWebhookUpdate(BaseModel):
+    discord_webhook_url: Optional[str] = Field(None, max_length=500, description="Discord webhook URL for notifications")
+
+@router.get("/discord-webhook", summary="Get company Discord webhook URL")
+def get_discord_webhook(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get Discord webhook URL for the current user's company
+    """
+    if not current_user.company_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User is not associated with any company"
+        )
+    
+    company = db.get(models.Company, current_user.company_id)
+    if not company:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Company not found"
+        )
+    
+    return {
+        "discord_webhook_url": company.discord_webhook_url,
+        "company_id": company.id,
+        "company_name": company.name
+    }
+
+@router.put("/discord-webhook", summary="Update company Discord webhook URL")
+def update_discord_webhook(
+    webhook_data: DiscordWebhookUpdate,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update Discord webhook URL for the current user's company
+    """
+    if not current_user.company_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User is not associated with any company"
+        )
+    
+    company = db.get(models.Company, current_user.company_id)
+    if not company:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Company not found"
+        )
+    
+    # Update webhook URL
+    company.discord_webhook_url = webhook_data.discord_webhook_url
+    db.commit()
+    db.refresh(company)
+    
+    return {
+        "discord_webhook_url": company.discord_webhook_url,
+        "company_id": company.id,
+        "company_name": company.name,
+        "message": "Discord webhook URL updated successfully"
+    }
 

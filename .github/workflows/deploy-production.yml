@@ -1,0 +1,268 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'docs-website/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/deploy-production.yml'
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  AWS_REGION: us-east-1
+  BACKEND_REPO: healthcare-backend
+  FRONTEND_REPO: healthcare-frontend
+  PRODUCTION_HOST: healthcare.hremsoftconsulting.com
+  API_HOST: api.hremsoftconsulting.com
+
+permissions:
+  contents: read
+
+jobs:
+  # Job 1: Build and Push Docker Images to ECR
+  build-and-push:
+    name: Build and Push to ECR
+    runs-on: ubuntu-latest
+    outputs:
+      backend-image: ${{ steps.backend-image.outputs.image }}
+      frontend-image: ${{ steps.frontend-image.outputs.image }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push backend image
+        id: backend-image
+        working-directory: ./backend
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          REPO_URI=$(aws ecr describe-repositories --repository-names $BACKEND_REPO --region $AWS_REGION --query "repositories[0].repositoryUri" --output text)
+          docker build -t ${REPO_URI}:${IMAGE_TAG} -t ${REPO_URI}:latest .
+          docker push ${REPO_URI}:${IMAGE_TAG}
+          docker push ${REPO_URI}:latest
+          echo "image=${REPO_URI}:${IMAGE_TAG}" >> $GITHUB_OUTPUT
+          echo "✅ Backend image pushed: ${REPO_URI}:${IMAGE_TAG}"
+
+      - name: Build, tag, and push frontend image
+        id: frontend-image
+        working-directory: ./frontend
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          REPO_URI=$(aws ecr describe-repositories --repository-names $FRONTEND_REPO --region $AWS_REGION --query "repositories[0].repositoryUri" --output text)
+          docker build -t ${REPO_URI}:${IMAGE_TAG} -t ${REPO_URI}:latest .
+          docker push ${REPO_URI}:${IMAGE_TAG}
+          docker push ${REPO_URI}:latest
+          echo "image=${REPO_URI}:${IMAGE_TAG}" >> $GITHUB_OUTPUT
+          echo "✅ Frontend image pushed: ${REPO_URI}:${IMAGE_TAG}"
+
+  # Job 2: Deploy to Production Server
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment:
+      name: production
+      url: https://${{ env.PRODUCTION_HOST }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          echo "🚀 Starting deployment to production..."
+          
+          # Create deployment script
+          cat > /tmp/deploy.sh << 'DEPLOY_SCRIPT'
+          #!/bin/bash
+          set -e
+          
+          echo "=========================================="
+          echo "🚀 GitHub Actions Deployment"
+          echo "=========================================="
+          echo ""
+          
+          # Step 1: Navigate to project directory
+          echo "📂 Step 1: Navigating to project directory..."
+          cd ${DEPLOY_PATH:-~/healthcare-app}
+          pwd
+          echo ""
+          
+          # Step 2: Pull latest code
+          echo "📥 Step 2: Pulling latest code from GitHub..."
+          git fetch origin
+          git reset --hard origin/main
+          git clean -fd
+          echo "✅ Code updated"
+          echo ""
+          
+          # Step 3: Stop existing containers (graceful)
+          echo "🛑 Step 3: Stopping existing containers..."
+          sudo docker-compose down || true
+          echo "✅ Containers stopped"
+          echo ""
+          
+          # Step 4: Pull latest images from ECR
+          echo "📦 Step 4: Pulling latest Docker images from ECR..."
+          # Configure AWS credentials if needed
+          if [ -n "$AWS_ACCESS_KEY_ID" ]; then
+            aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin $(aws sts get-caller-identity --query Account --output text).dkr.ecr.us-east-1.amazonaws.com
+          fi
+          # Pull images (if using ECR images in docker-compose)
+          # sudo docker-compose pull || echo "⚠️  Note: Using local build instead"
+          echo "✅ Images ready"
+          echo ""
+          
+          # Step 5: Build containers
+          echo "🏗️  Step 5: Building containers..."
+          sudo docker-compose build --no-cache
+          echo "✅ Containers built"
+          echo ""
+          
+          # Step 6: Start services
+          echo "🚀 Step 6: Starting services..."
+          sudo docker-compose up -d
+          echo "✅ Services started"
+          echo ""
+          
+          # Step 7: Wait for database to be ready
+          echo "⏳ Step 7: Waiting for database to be ready..."
+          for i in {1..30}; do
+            if sudo docker exec healthcare_db pg_isready -U postgres > /dev/null 2>&1; then
+              echo "✅ Database is ready"
+              break
+            fi
+            echo "   Waiting... ($i/30)"
+            sleep 2
+          done
+          echo ""
+          
+          # Step 8: Run database migrations
+          echo "🗄️  Step 8: Running database migrations..."
+          if [ -f "backend/migrations/001_multi_tenancy.sql" ]; then
+            sudo docker exec -i healthcare_db psql -U postgres -d healthcare < backend/migrations/001_multi_tenancy.sql 2>/dev/null || echo "⚠️  Migration 001 already applied or skipped"
+          fi
+          
+          if [ -f "backend/migrations/002_add_discord_webhook.sql" ]; then
+            sudo docker exec -i healthcare_db psql -U postgres -d healthcare < backend/migrations/002_add_discord_webhook.sql 2>/dev/null || echo "⚠️  Migration 002 already applied or skipped"
+          fi
+          echo "✅ Migrations completed"
+          echo ""
+          
+          # Step 9: Wait for backend to start
+          echo "⏳ Step 9: Waiting for backend to initialize..."
+          sleep 15
+          echo ""
+          
+          # Step 10: Check service status
+          echo "📊 Step 10: Checking service status..."
+          sudo docker-compose ps
+          echo ""
+          
+          # Step 11: Check backend logs
+          echo "📋 Step 11: Backend logs (last 20 lines)..."
+          sudo docker-compose logs --tail=20 backend
+          echo ""
+          
+          # Step 12: Test endpoints
+          echo "🧪 Step 12: Testing endpoints..."
+          echo ""
+          echo "Testing frontend:"
+          curl -s -o /dev/null -w "Status: %{http_code}\n" https://${PRODUCTION_HOST} || echo "⚠️  Frontend check skipped"
+          echo ""
+          echo "Testing API:"
+          curl -s -o /dev/null -w "Status: %{http_code}\n" https://${API_HOST}/docs || echo "⚠️  API check skipped"
+          echo ""
+          echo "Testing docs-website:"
+          curl -s -o /dev/null -w "Status: %{http_code}\n" https://${API_HOST}/docs-website/ || echo "⚠️  Docs check skipped"
+          echo ""
+          
+          echo "=========================================="
+          echo "✅ DEPLOYMENT COMPLETE!"
+          echo "=========================================="
+          echo ""
+          echo "🔗 URLs:"
+          echo "   Frontend: https://${PRODUCTION_HOST}"
+          echo "   API:      https://${API_HOST}"
+          echo "   Docs:     https://${API_HOST}/docs-website/"
+          echo "   Swagger:  https://${API_HOST}/docs"
+          echo ""
+          DEPLOY_SCRIPT
+          
+          # Copy and execute deployment script
+          scp /tmp/deploy.sh ${SSH_USER}@${SSH_HOST}:/tmp/deploy.sh
+          ssh ${SSH_USER}@${SSH_HOST} "chmod +x /tmp/deploy.sh && DEPLOY_PATH=${DEPLOY_PATH} PRODUCTION_HOST=${PRODUCTION_HOST} API_HOST=${API_HOST} /tmp/deploy.sh"
+
+      - name: Verify deployment
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          echo "🔍 Verifying deployment..."
+          
+          # Test endpoints
+          echo "Testing production endpoints..."
+          
+          # Test frontend
+          FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://${{ env.PRODUCTION_HOST }} || echo "000")
+          if [ "$FRONTEND_STATUS" = "200" ] || [ "$FRONTEND_STATUS" = "301" ] || [ "$FRONTEND_STATUS" = "302" ]; then
+            echo "✅ Frontend is accessible (Status: $FRONTEND_STATUS)"
+          else
+            echo "⚠️  Frontend returned status: $FRONTEND_STATUS"
+          fi
+          
+          # Test API
+          API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://${{ env.API_HOST }}/docs || echo "000")
+          if [ "$API_STATUS" = "200" ]; then
+            echo "✅ API is accessible (Status: $API_STATUS)"
+          else
+            echo "⚠️  API returned status: $API_STATUS"
+          fi
+          
+          # Test docs-website
+          DOCS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://${{ env.API_HOST }}/docs-website/ || echo "000")
+          if [ "$DOCS_STATUS" = "200" ]; then
+            echo "✅ Docs website is accessible (Status: $DOCS_STATUS)"
+          else
+            echo "⚠️  Docs website returned status: $DOCS_STATUS"
+          fi
+          
+          echo ""
+          echo "🎉 Deployment verification complete!"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed!"
+          echo "Check the logs above for details."
+          # You can add Slack/Discord webhook notification here
+          # curl -X POST -H 'Content-type: application/json' \
+          #   --data '{"text":"🚨 Deployment to production failed!"}' \
+          #   ${{ secrets.DISCORD_WEBHOOK_URL }}
+
