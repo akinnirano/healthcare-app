@@ -12,6 +12,7 @@ on:
   workflow_dispatch:  # Allow manual trigger
 
 env:
+  VPS_SERVER: 78.138.17.185
   PRODUCTION_HOST: healthcare.hremsoftconsulting.com
   API_HOST: api.hremsoftconsulting.com
 
@@ -19,9 +20,9 @@ permissions:
   contents: read
 
 jobs:
-  # Deploy to Production Server
+  # Deploy to VPS Production Server
   deploy:
-    name: Deploy to Production on Kamatara server
+    name: Deploy to VPS Server (78.138.17.185)
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -35,18 +36,25 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Add server to known hosts
+      - name: Add VPS server to known hosts
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST || env.VPS_SERVER }}
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${SSH_HOST} >> ~/.ssh/known_hosts
+          echo "✅ Added VPS server to known hosts: ${SSH_HOST}"
 
-      - name: Deploy to server
+      - name: Deploy to VPS server
         env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_HOST: ${{ secrets.SSH_HOST || env.VPS_SERVER }}
           SSH_USER: ${{ secrets.SSH_USER }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          VPS_IP: ${{ env.VPS_SERVER }}
         run: |
-          echo "🚀 Starting deployment to production..."
+          echo "🚀 Starting deployment to VPS server (${VPS_IP})..."
+          echo "📍 Target VPS: ${SSH_HOST}"
+          echo "👤 SSH User: ${SSH_USER}"
+          echo "📂 Deploy Path: ${DEPLOY_PATH}"
           
           # Create deployment script
           cat > /tmp/deploy.sh << 'DEPLOY_SCRIPT'
@@ -54,7 +62,8 @@ jobs:
           set -e
           
           echo "=========================================="
-          echo "🚀 GitHub Actions Deployment"
+          echo "🚀 GitHub Actions Deployment to VPS"
+          echo "📍 Server: ${VPS_IP:-78.138.17.185}"
           echo "=========================================="
           echo ""
           
@@ -154,16 +163,19 @@ jobs:
           echo ""
           DEPLOY_SCRIPT
           
-          # Copy and execute deployment script
+          # Copy and execute deployment script on VPS
+          echo "📤 Copying deployment script to VPS..."
           scp /tmp/deploy.sh ${SSH_USER}@${SSH_HOST}:/tmp/deploy.sh
-          ssh ${SSH_USER}@${SSH_HOST} "chmod +x /tmp/deploy.sh && DEPLOY_PATH=${DEPLOY_PATH} PRODUCTION_HOST=${PRODUCTION_HOST} API_HOST=${API_HOST} /tmp/deploy.sh"
+          echo "▶️  Executing deployment on VPS..."
+          ssh ${SSH_USER}@${SSH_HOST} "chmod +x /tmp/deploy.sh && DEPLOY_PATH=${DEPLOY_PATH} PRODUCTION_HOST=${PRODUCTION_HOST} API_HOST=${API_HOST} VPS_IP=${VPS_IP} /tmp/deploy.sh"
 
-      - name: Verify deployment
+      - name: Verify VPS deployment
         env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_HOST: ${{ secrets.SSH_HOST || env.VPS_SERVER }}
           SSH_USER: ${{ secrets.SSH_USER }}
+          VPS_IP: ${{ env.VPS_SERVER }}
         run: |
-          echo "🔍 Verifying deployment..."
+          echo "🔍 Verifying deployment on VPS (${VPS_IP})..."
           
           # Test endpoints
           echo "Testing production endpoints..."
