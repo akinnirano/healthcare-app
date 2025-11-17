@@ -66,6 +66,7 @@ class Company(Base):
     phone = Column(String(50))
     registration_number = Column(String(100))  # Business registration number
     tax_id = Column(String(100))  # Tax ID / EIN
+    discord_webhook_url = Column(String(500))  # Discord webhook URL for notifications
     is_active = Column(Boolean, default=True)
     
     country = relationship("Country", back_populates="companies")
