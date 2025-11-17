@@ -67,6 +67,36 @@ jobs:
           echo "=========================================="
           echo ""
           
+          # Determine if sudo is needed for docker commands
+          DOCKER_CMD="docker"
+          DOCKER_COMPOSE_CMD="docker-compose"
+          if ! docker ps > /dev/null 2>&1; then
+            echo "⚠️  Docker requires sudo, checking if passwordless sudo is configured..."
+            if sudo -n docker ps > /dev/null 2>&1; then
+              echo "✅ Passwordless sudo is configured"
+              DOCKER_CMD="sudo docker"
+              DOCKER_COMPOSE_CMD="sudo docker-compose"
+            else
+              echo "❌ ERROR: Docker commands require sudo but passwordless sudo is not configured"
+              echo ""
+              echo "Please configure one of the following on the VPS server:"
+              echo ""
+              echo "Option 1 (Recommended): Add user to docker group (no sudo needed):"
+              echo "  sudo usermod -aG docker $(whoami)"
+              echo "  # Then logout and login again, or run: newgrp docker"
+              echo ""
+              echo "Option 2: Configure passwordless sudo for docker:"
+              echo "  sudo visudo"
+              echo "  # Add this line (replace USERNAME with your username):"
+              echo "  $(whoami) ALL=(ALL) NOPASSWD: /usr/bin/docker, /usr/local/bin/docker-compose, /usr/bin/docker-compose"
+              echo ""
+              exit 1
+            fi
+          else
+            echo "✅ Docker can be run without sudo (user is in docker group)"
+          fi
+          echo ""
+          
           # Step 1: Navigate to project directory
           echo "📂 Step 1: Navigating to project directory..."
           cd ${DEPLOY_PATH:-~/healthcare-app}
@@ -83,26 +113,26 @@ jobs:
           
           # Step 3: Stop existing containers (graceful)
           echo "🛑 Step 3: Stopping existing containers..."
-          sudo docker-compose down || true
+          ${DOCKER_COMPOSE_CMD} down || true
           echo "✅ Containers stopped"
           echo ""
           
           # Step 4: Build containers
           echo "🏗️  Step 4: Building containers..."
-          sudo docker-compose build --no-cache
+          ${DOCKER_COMPOSE_CMD} build --no-cache
           echo "✅ Containers built"
           echo ""
           
           # Step 5: Start services
           echo "🚀 Step 5: Starting services..."
-          sudo docker-compose up -d
+          ${DOCKER_COMPOSE_CMD} up -d
           echo "✅ Services started"
           echo ""
           
           # Step 6: Wait for database to be ready
           echo "⏳ Step 6: Waiting for database to be ready..."
           for i in {1..30}; do
-            if sudo docker exec healthcare_db pg_isready -U postgres > /dev/null 2>&1; then
+            if ${DOCKER_CMD} exec healthcare_db pg_isready -U postgres > /dev/null 2>&1; then
               echo "✅ Database is ready"
               break
             fi
@@ -114,11 +144,11 @@ jobs:
           # Step 7: Run database migrations
           echo "🗄️  Step 7: Running database migrations..."
           if [ -f "backend/migrations/001_multi_tenancy.sql" ]; then
-            sudo docker exec -i healthcare_db psql -U postgres -d healthcare < backend/migrations/001_multi_tenancy.sql 2>/dev/null || echo "⚠️  Migration 001 already applied or skipped"
+            ${DOCKER_CMD} exec -i healthcare_db psql -U postgres -d healthcare < backend/migrations/001_multi_tenancy.sql 2>/dev/null || echo "⚠️  Migration 001 already applied or skipped"
           fi
           
           if [ -f "backend/migrations/002_add_discord_webhook.sql" ]; then
-            sudo docker exec -i healthcare_db psql -U postgres -d healthcare < backend/migrations/002_add_discord_webhook.sql 2>/dev/null || echo "⚠️  Migration 002 already applied or skipped"
+            ${DOCKER_CMD} exec -i healthcare_db psql -U postgres -d healthcare < backend/migrations/002_add_discord_webhook.sql 2>/dev/null || echo "⚠️  Migration 002 already applied or skipped"
           fi
           echo "✅ Migrations completed"
           echo ""
@@ -130,12 +160,12 @@ jobs:
           
           # Step 9: Check service status
           echo "📊 Step 9: Checking service status..."
-          sudo docker-compose ps
+          ${DOCKER_COMPOSE_CMD} ps
           echo ""
           
           # Step 10: Check backend logs
           echo "📋 Step 10: Backend logs (last 20 lines)..."
-          sudo docker-compose logs --tail=20 backend
+          ${DOCKER_COMPOSE_CMD} logs --tail=20 backend
           echo ""
           
           # Step 11: Test endpoints
