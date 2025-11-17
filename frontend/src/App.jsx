@@ -23,6 +23,8 @@ import SpecificMapTracker from './components/SpecificMapTracker'
 import AssignShiffs from './pages/Dashboard/AssignShiffs'
 import Startshift from './pages/Dashboard/Startshift'
 import EndShift from './pages/Dashboard/EndShift'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfService from './pages/TermsOfService'
 
 export default function App(){
   return (
@@ -35,6 +37,8 @@ export default function App(){
       <Route path="/register" element={<PatientRegister />} />
       <Route path="/patient/register" element={<PatientRegister />} />
       <Route path="/practitioner/register" element={<PractitionerRegister />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-of-service" element={<TermsOfService />} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/dashboard/admin" element={<ProtectedRoute disallowRoles={["patient"]}><AdminDashboard /></ProtectedRoute>} />
       <Route path="/dashboard/users" element={<ProtectedRoute disallowRoles={["patient"]}><UserManagementPage /></ProtectedRoute>} />
