@@ -197,8 +197,8 @@ function SideNav({ open, onToggle, active, onSelect, onLogout, role }) {
             <div className="ml-3 grid gap-1">
               <button onClick={() => onSelect("assignments")} className={navSubItemCls(active === "assignments")}><SwapIcon /> Manage Staff Assignments</button>
               <button onClick={() => onSelect("shift_reports")} className={navSubItemCls(active === "shift_reports")}><ClockIcon /> Manage Shift Reports</button>
-              <a href="/dashboard/timesheets" className=navSubItemCls(active === "timesheets") + " flex items-center"}><DocumentIcon /> Manage Timesheet Report</a>
-              <a href="/dashboard/shift-verification" className=navSubItemCls(active === "shift_verification") + " flex items-center"}><CheckIcon /> Shift Verification</a>
+              <a href="/dashboard/timesheets" className={navSubItemCls(active === "timesheets") + " flex items-center"}><DocumentIcon /> Manage Timesheet Report</a>
+              <a href="/dashboard/shift-verification" className={navSubItemCls(active === "shift_verification") + " flex items-center"}><CheckIcon /> Shift Verification</a>
               <button onClick={() => onSelect("payroll")} className={navSubItemCls(active === "payroll")}><CashIcon /> Manage Payroll</button>
               <button onClick={() => onSelect("invoices")} className={navSubItemCls(active === "invoices")}><ReceiptIcon /> Manage Invoice</button>
               <button onClick={() => onSelect("compliance")} className={navSubItemCls(active === "compliance")}><CheckIcon /> Manage Compliance</button>
