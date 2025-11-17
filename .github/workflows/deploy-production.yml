@@ -12,9 +12,6 @@ on:
   workflow_dispatch:  # Allow manual trigger
 
 env:
-  AWS_REGION: us-east-1
-  BACKEND_REPO: healthcare-backend
-  FRONTEND_REPO: healthcare-frontend
   PRODUCTION_HOST: healthcare.hremsoftconsulting.com
   API_HOST: api.hremsoftconsulting.com
 
@@ -22,57 +19,10 @@ permissions:
   contents: read
 
 jobs:
-  # Job 1: Build and Push Docker Images to ECR
-  build-and-push:
-    name: Build and Push to ECR
-    runs-on: ubuntu-latest
-    outputs:
-      backend-image: ${{ steps.backend-image.outputs.image }}
-      frontend-image: ${{ steps.frontend-image.outputs.image }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        id: ecr-login
-        uses: aws-actions/amazon-ecr-login@v1
-
-      - name: Build, tag, and push backend image
-        id: backend-image
-        working-directory: ./backend
-        run: |
-          IMAGE_TAG=${{ github.sha }}
-          REPO_URI=$(aws ecr describe-repositories --repository-names $BACKEND_REPO --region $AWS_REGION --query "repositories[0].repositoryUri" --output text)
-          docker build -t ${REPO_URI}:${IMAGE_TAG} -t ${REPO_URI}:latest .
-          docker push ${REPO_URI}:${IMAGE_TAG}
-          docker push ${REPO_URI}:latest
-          echo "image=${REPO_URI}:${IMAGE_TAG}" >> $GITHUB_OUTPUT
-          echo "✅ Backend image pushed: ${REPO_URI}:${IMAGE_TAG}"
-
-      - name: Build, tag, and push frontend image
-        id: frontend-image
-        working-directory: ./frontend
-        run: |
-          IMAGE_TAG=${{ github.sha }}
-          REPO_URI=$(aws ecr describe-repositories --repository-names $FRONTEND_REPO --region $AWS_REGION --query "repositories[0].repositoryUri" --output text)
-          docker build -t ${REPO_URI}:${IMAGE_TAG} -t ${REPO_URI}:latest .
-          docker push ${REPO_URI}:${IMAGE_TAG}
-          docker push ${REPO_URI}:latest
-          echo "image=${REPO_URI}:${IMAGE_TAG}" >> $GITHUB_OUTPUT
-          echo "✅ Frontend image pushed: ${REPO_URI}:${IMAGE_TAG}"
-
-  # Job 2: Deploy to Production Server
+  # Deploy to Production Server
   deploy:
     name: Deploy to Production on Kamatara server
     runs-on: ubuntu-latest
-    needs: build-and-push
     environment:
       name: production
       url: https://${{ env.PRODUCTION_HOST }}
@@ -128,31 +78,20 @@ jobs:
           echo "✅ Containers stopped"
           echo ""
           
-          # Step 4: Pull latest images from ECR
-          echo "📦 Step 4: Pulling latest Docker images from ECR..."
-          # Configure AWS credentials if needed
-          if [ -n "$AWS_ACCESS_KEY_ID" ]; then
-            aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin $(aws sts get-caller-identity --query Account --output text).dkr.ecr.us-east-1.amazonaws.com
-          fi
-          # Pull images (if using ECR images in docker-compose)
-          # sudo docker-compose pull || echo "⚠️  Note: Using local build instead"
-          echo "✅ Images ready"
-          echo ""
-          
-          # Step 5: Build containers
-          echo "🏗️  Step 5: Building containers..."
+          # Step 4: Build containers
+          echo "🏗️  Step 4: Building containers..."
           sudo docker-compose build --no-cache
           echo "✅ Containers built"
           echo ""
           
-          # Step 6: Start services
-          echo "🚀 Step 6: Starting services..."
+          # Step 5: Start services
+          echo "🚀 Step 5: Starting services..."
           sudo docker-compose up -d
           echo "✅ Services started"
           echo ""
           
-          # Step 7: Wait for database to be ready
-          echo "⏳ Step 7: Waiting for database to be ready..."
+          # Step 6: Wait for database to be ready
+          echo "⏳ Step 6: Waiting for database to be ready..."
           for i in {1..30}; do
             if sudo docker exec healthcare_db pg_isready -U postgres > /dev/null 2>&1; then
               echo "✅ Database is ready"
@@ -163,8 +102,8 @@ jobs:
           done
           echo ""
           
-          # Step 8: Run database migrations
-          echo "🗄️  Step 8: Running database migrations..."
+          # Step 7: Run database migrations
+          echo "🗄️  Step 7: Running database migrations..."
           if [ -f "backend/migrations/001_multi_tenancy.sql" ]; then
             sudo docker exec -i healthcare_db psql -U postgres -d healthcare < backend/migrations/001_multi_tenancy.sql 2>/dev/null || echo "⚠️  Migration 001 already applied or skipped"
           fi
@@ -175,23 +114,23 @@ jobs:
           echo "✅ Migrations completed"
           echo ""
           
-          # Step 9: Wait for backend to start
-          echo "⏳ Step 9: Waiting for backend to initialize..."
+          # Step 8: Wait for backend to start
+          echo "⏳ Step 8: Waiting for backend to initialize..."
           sleep 15
           echo ""
           
-          # Step 10: Check service status
-          echo "📊 Step 10: Checking service status..."
+          # Step 9: Check service status
+          echo "📊 Step 9: Checking service status..."
           sudo docker-compose ps
           echo ""
           
-          # Step 11: Check backend logs
-          echo "📋 Step 11: Backend logs (last 20 lines)..."
+          # Step 10: Check backend logs
+          echo "📋 Step 10: Backend logs (last 20 lines)..."
           sudo docker-compose logs --tail=20 backend
           echo ""
           
-          # Step 12: Test endpoints
-          echo "🧪 Step 12: Testing endpoints..."
+          # Step 11: Test endpoints
+          echo "🧪 Step 11: Testing endpoints..."
           echo ""
           echo "Testing frontend:"
           curl -s -o /dev/null -w "Status: %{http_code}\n" https://${PRODUCTION_HOST} || echo "⚠️  Frontend check skipped"
